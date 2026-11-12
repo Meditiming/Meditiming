@@ -1,0 +1,2902 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediTiming</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/hoony-majormap/majormap-fonts@1.0.0/css/ibm-plex-sans-kr.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/hoony-majormap/majormap-fonts@1.0.0/css/paperlogy.css">
+<style>
+  :root {
+    --paper: #EEF3F1;      /* 약포지: 바탕 */
+    --surface: #FFFFFF;    /* 면 */
+    --ink: #15302B;        /* 글자 */
+    --ink-soft: #4A625D;   /* 보조 글자 */
+    --bottle: #0E6B5C;     /* 약병 초록: 주 동작 */
+    --bottle-deep: #0A5246;
+    --capsule: #F2B33D;    /* 캡슐 호박색: 지금 */
+    --line: #C5D2CE;       /* 구분선 */
+
+    --font-body: 'IBM Plex Sans KR', sans-serif;
+    --font-title: 'Paperlogy', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.6;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2 { font-family: var(--font-title); margin: 0; }
+  p { margin: 0; }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 20px 32px;
+    display: grid;
+    gap: 40px;
+  }
+
+  /* ---------- 이름과 소개 ---------- */
+  .service-name {
+    font-size: clamp(48px, 13vw, 92px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .intro-line {
+    margin-top: 20px;
+    max-width: 22em;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* ---------- 핵심 기능 버튼 ---------- */
+  .actions {
+    margin-top: 32px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .action {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    min-height: 84px;
+    padding: 16px 20px;
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .action svg { width: 44px; height: 44px; }
+
+  .action-name {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .action-desc {
+    display: block;
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .action.is-main {
+    background: var(--bottle);
+    border-color: var(--bottle);
+    color: #FFFFFF;
+  }
+  .action.is-main .action-desc { color: #D6EBE6; }
+
+  .action:hover { background: #F6FAF8; }
+  .action.is-main:hover { background: var(--bottle-deep); border-color: var(--bottle-deep); }
+  .action:active { transform: translateY(1px); }
+
+  .action:focus-visible,
+  a:focus-visible {
+    outline: 4px solid var(--capsule);
+    outline-offset: 3px;
+  }
+
+  .notice {
+    min-height: 1.6em;
+    margin-top: 16px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--bottle-deep);
+  }
+
+  /* ---------- 오늘 미리보기 ---------- */
+  .today {
+    padding: 24px 20px;
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 24px;
+  }
+
+  .today h2 {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .today-sub {
+    margin-top: 4px;
+    font-size: 16px;
+    color: var(--ink-soft);
+  }
+
+  /* 하루를 캡슐 하나로 본다: 왼쪽 끝 오전 6시, 오른쪽 끝 밤 12시 */
+  .day {
+    position: relative;
+    margin-top: 52px;
+  }
+
+  .day-track {
+    position: relative;
+    height: 52px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--paper);
+    overflow: hidden;
+  }
+
+  .day-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 24%;
+    background: var(--bottle);
+    border-right: 4px solid var(--capsule);
+    animation: fill-day 1.1s cubic-bezier(.2, .7, .2, 1) both;
+  }
+
+  @keyframes fill-day { from { width: 0; } }
+
+  .dose-dot {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--surface);
+  }
+
+  .now-label {
+    position: absolute;
+    left: 24%;
+    bottom: calc(100% + 8px);
+    padding-left: 8px;
+    border-left: 4px solid var(--capsule);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  .day-ends {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .doses {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+  }
+
+  .dose {
+    display: grid;
+    grid-template-columns: 5.2em 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .dose-time { font-weight: 700; }
+  .dose-what { line-height: 1.4; }
+
+  .dose-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .dose-state svg { width: 22px; height: 22px; flex: none; }
+
+  .dose.is-done .dose-state { color: var(--bottle); font-weight: 700; }
+  .dose.is-next .dose-state { font-weight: 700; }
+  .dose.is-later .dose-state { color: var(--ink-soft); }
+
+  .sample-note {
+    margin-top: 16px;
+    padding: 10px 14px;
+    border: 1px dashed var(--ink-soft);
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- 아래 안내 ---------- */
+  .footnote {
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 36em;
+  }
+
+  /* ---------- 화면 전환 ---------- */
+  .view[hidden] { display: none; }
+
+  .text-button {
+    margin-top: 16px;
+    padding: 12px 4px;
+    border: 0;
+    background: none;
+    color: var(--bottle-deep);
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+
+  .sheet {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 56px;
+  }
+
+  .back {
+    min-height: 48px;
+    padding: 8px 16px 8px 10px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .back svg { width: 20px; height: 20px; }
+
+  .sheet-title {
+    margin-top: 24px;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .sheet-title:focus { outline: none; }
+
+  .sheet-sub { margin-top: 8px; color: var(--ink-soft); }
+
+  /* ---------- 등록 양식 ---------- */
+  .med-form { margin-top: 28px; display: grid; gap: 28px; }
+
+  .field { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+  .field-name,
+  .field > legend {
+    display: block;
+    padding: 0;
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .field-help { margin: -4px 0 10px; font-size: 16px; color: var(--ink-soft); }
+  .sub-label { display: block; margin: 0 0 6px; font-size: 16px; color: var(--ink-soft); }
+  .gap-top { margin-top: 12px; }
+
+  .input {
+    width: 100%;
+    min-height: 56px;
+    padding: 10px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 20px;
+  }
+  .input:disabled { background: var(--paper); color: var(--ink-soft); border-color: var(--line); }
+  .input[aria-invalid="true"] { border-width: 4px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .row > .input { flex: 1 1 120px; width: auto; }
+
+  /* 고르는 단추: 숨긴 체크박스·라디오와 눈에 보이는 이름표 */
+  .pick { position: relative; }
+  .pick input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .pick span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    min-height: 52px;
+    padding: 8px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--surface);
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .pick input:checked + span {
+    background: var(--bottle);
+    border-color: var(--bottle);
+    color: #FFFFFF;
+    font-weight: 700;
+  }
+  .pick input:checked + span::before { content: "\2713"; margin-right: 6px; }
+  .pick input:focus-visible + span { outline: 4px solid var(--capsule); outline-offset: 3px; }
+  .pick.is-day span { padding: 8px 10px; }
+
+  .btn {
+    min-height: 52px;
+    padding: 10px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn:hover { background: #F6FAF8; }
+  .btn.is-main { background: var(--bottle); border-color: var(--bottle); color: #FFFFFF; }
+  .btn.is-main:hover { background: var(--bottle-deep); border-color: var(--bottle-deep); }
+  .btn.is-big { min-height: 64px; font-size: 20px; flex: 1 1 200px; }
+  .btn[aria-pressed="true"]::before { content: "\2713"; margin-right: 6px; }
+  .btn:focus-visible, .back:focus-visible, .text-button:focus-visible, .input:focus-visible {
+    outline: 4px solid var(--capsule);
+    outline-offset: 3px;
+  }
+
+  .time-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+  .time-item { display: flex; gap: 10px; align-items: center; }
+  .time-item .input { flex: 1; }
+  .time-empty { margin-top: 12px; color: var(--ink-soft); }
+
+  .form-problems {
+    padding: 16px 18px;
+    border: 4px solid var(--ink);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .form-problems strong { display: block; margin-bottom: 4px; }
+  .form-problems ul { margin: 0; padding-left: 1.2em; }
+
+  .form-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .storage-note { font-size: 15px; color: var(--ink-soft); }
+
+  /* ---------- 내 약 목록 ---------- */
+  .list-notice { min-height: 1.6em; margin-top: 16px; font-weight: 700; color: var(--bottle-deep); }
+
+  .med-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 14px; }
+
+  .med {
+    padding: 20px;
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+  }
+  .med-kind {
+    display: inline-block;
+    padding: 2px 10px;
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .med-kind.is-supplement { border-style: dashed; }
+  .med-name { margin-top: 10px; font-size: 24px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+  .med-facts { margin: 10px 0 0; display: grid; grid-template-columns: 4.5em 1fr; gap: 6px 12px; }
+  .med-facts dt { color: var(--ink-soft); }
+  .med-facts dd { margin: 0; font-weight: 500; }
+  .med-actions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .med-confirm { flex-basis: 100%; font-weight: 700; }
+
+  .empty {
+    margin-top: 12px;
+    padding: 28px 20px;
+    border: 2px dashed var(--ink-soft);
+    border-radius: 18px;
+  }
+  .empty p + p { margin-top: 6px; color: var(--ink-soft); }
+  .empty .row { margin-top: 18px; }
+
+  .list-foot { margin-top: 24px; display: flex; }
+  .list-foot[hidden], .empty[hidden], .form-problems[hidden], .time-empty[hidden] { display: none; }
+
+  /* ---------- 오늘 먹을 약 ---------- */
+  .today-summary { margin-top: 12px; font-size: 20px; font-weight: 700; }
+  .slot { margin-top: 28px; }
+  .slot-time { font-size: 26px; font-weight: 800; line-height: 1.3; }
+  .takes { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 12px; }
+  .take {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+  }
+  .take-name { font-size: 20px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+  .take-name .med-kind { margin-right: 8px; font-size: 14px; vertical-align: 2px; }
+  .take-state { grid-column: 1; font-size: 17px; color: var(--ink-soft); }
+  .take-buttons { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 8px; }
+  .take-buttons .btn { min-width: 112px; }
+  .take.is-done { border-color: var(--bottle); background: #F1F8F5; }
+  .take.is-done .take-state { color: var(--bottle-deep); font-weight: 700; }
+  .take.is-late { border-width: 4px; }
+  .take.is-late .take-state { color: var(--ink); font-weight: 700; }
+  @media (max-width: 420px) {
+    .take { grid-template-columns: 1fr; }
+    .take-buttons { grid-column: 1; grid-row: auto; }
+  }
+
+  /* ---------- 날짜별 복용 기록 ---------- */
+  .home-links { display: flex; flex-wrap: wrap; gap: 0 28px; }
+
+  .cal-head { margin-top: 24px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cal-month { font-size: 26px; font-weight: 800; text-align: center; flex: 1; }
+  .cal-head .btn { min-width: 52px; padding: 10px 14px; }
+  .cal-grid { margin-top: 14px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { text-align: center; font-size: 15px; font-weight: 500; color: var(--ink-soft); padding-bottom: 2px; }
+  .cal-day {
+    min-height: 60px;
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+  .cal-mark { height: 18px; font-size: 16px; line-height: 18px; font-weight: 800; }
+  .cal-day.is-done { border-color: var(--bottle); background: #F1F8F5; }
+  .cal-day.is-done .cal-mark { color: var(--bottle); }
+  .cal-day.is-missed { border: 3px solid var(--ink); }
+  .cal-day.is-today { box-shadow: inset 0 -6px 0 var(--capsule); }
+  .cal-day[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #FFFFFF; }
+  .cal-day[aria-pressed="true"] .cal-mark { color: #FFFFFF; }
+  .cal-day:focus-visible { outline: 4px solid var(--capsule); outline-offset: 2px; }
+  .cal-legend { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 15px; color: var(--ink-soft); }
+  .cal-legend b { color: var(--ink); margin-right: 4px; }
+  .cal-legend .today-key { display: inline-block; width: 18px; height: 6px; margin-right: 6px; background: var(--capsule); vertical-align: middle; }
+
+  .day-title { margin-top: 32px; font-size: 26px; font-weight: 800; line-height: 1.3; }
+  .day-title:focus { outline: none; }
+  .day-none { margin-top: 12px; color: var(--ink-soft); }
+  .take.is-record { grid-template-columns: 5.4em 1fr; }
+  .take.is-record .take-clock { grid-row: 1 / span 2; align-self: start; font-size: 18px; font-weight: 700; padding-top: 3px; }
+  .take.is-record .take-state { grid-column: 2; }
+
+  /* ---------- 약 궁합 ---------- */
+  .sample-warning {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border: 3px dashed var(--ink);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .sample-warning strong { display: block; font-size: 19px; }
+  .sample-warning p + p { margin-top: 6px; font-size: 16px; color: var(--ink-soft); }
+
+  .match-heading { margin-top: 32px; font-size: 26px; font-weight: 800; line-height: 1.3; }
+  .combos { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 14px; }
+  .combo { padding: 20px; background: var(--surface); border: 2px solid var(--ink); border-radius: 18px; }
+  .combo.is-avoid { border-width: 4px; }
+
+  .level {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px 4px 8px;
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .level svg { width: 24px; height: 24px; flex: none; }
+  .level.is-avoid { background: var(--ink); color: #FFFFFF; }
+  .level.is-gap { background: var(--capsule); }
+  .level.is-ask { background: var(--surface); }
+
+  .combo-pair { margin-top: 12px; font-family: var(--font-title); font-size: 23px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+  .combo-reason { margin-top: 8px; }
+  .combo-do { margin-top: 10px; padding: 12px 14px; border-left: 6px solid var(--bottle); background: #F1F8F5; border-radius: 0 10px 10px 0; font-weight: 500; }
+  .combo-same { margin-top: 10px; font-weight: 700; }
+  .combo-source { margin-top: 10px; font-size: 15px; color: var(--ink-soft); }
+
+  .unknown { margin-top: 12px; padding: 18px 20px; border: 2px solid var(--line); border-radius: 18px; background: var(--surface); }
+  .unknown p + p { margin-top: 6px; }
+  .unknown ul { margin: 10px 0 0; padding-left: 1.2em; color: var(--ink-soft); }
+  .unknown summary { margin-top: 10px; font-weight: 700; cursor: pointer; padding: 6px 0; }
+  .known-names { margin-top: 24px; font-size: 15px; color: var(--ink-soft); }
+
+  .list-alert {
+    margin-top: 12px;
+    padding: 16px 18px;
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .list-alert[hidden] { display: none; }
+  .list-alert p { font-weight: 700; }
+  .list-alert .btn { margin-top: 12px; }
+
+  /* ---------- 사진으로 약 이름 채우기 ---------- */
+  .photo-preview { display: block; max-width: 100%; max-height: 320px; margin-top: 14px; border: 2px solid var(--ink); border-radius: 12px; }
+  .photo-status { margin-top: 12px; font-weight: 700; }
+  .photo-names { margin-top: 10px; display: grid; gap: 8px; }
+  .photo-names .btn { text-align: left; font-weight: 500; overflow-wrap: anywhere; }
+
+  /* ---------- 보호자 안심 문자 (미리보기) ---------- */
+  .bubble {
+    position: relative;
+    max-width: 30em;
+    margin-top: 10px;
+    padding: 14px 16px;
+    border: 2px solid var(--ink);
+    border-radius: 18px 18px 18px 4px;
+    background: #F1F8F5;
+    font-size: 18px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .sms-to { margin-top: 10px; font-weight: 700; overflow-wrap: anywhere; }
+  .sms-meta { margin-top: 6px; font-size: 15px; color: var(--ink-soft); }
+
+  .sms {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 11;
+    padding: 12px;
+    pointer-events: none;
+  }
+  .sms[hidden] { display: none; }
+  .has-sms .alarm { display: none; }
+  .sms-box {
+    pointer-events: auto;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 18px 20px 20px;
+    background: var(--surface);
+    border: 4px solid var(--ink);
+    border-radius: 20px;
+  }
+  .sms-label {
+    display: inline-block;
+    padding: 3px 12px;
+    border: 3px dashed var(--ink);
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .sms-title { margin-top: 10px; font-size: 24px; font-weight: 800; line-height: 1.3; }
+  .sms-box .btn { margin-top: 14px; width: 100%; }
+
+  .outbox { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 14px; }
+  .outbox li { padding: 16px 18px; background: var(--surface); border: 2px solid var(--ink); border-radius: 16px; }
+  .outbox .sms-to { margin-top: 0; }
+  .check-line { display: flex; align-items: flex-start; gap: 12px; font-size: 18px; font-weight: 500; cursor: pointer; }
+  .check-line input { flex: none; width: 28px; height: 28px; margin: 2px 0 0; accent-color: var(--bottle); }
+  .check-line input:focus-visible { outline: 4px solid var(--capsule); outline-offset: 3px; }
+
+  /* ---------- 중복 복용 경고 ---------- */
+  .warn {
+    width: min(560px, calc(100% - 24px));
+    padding: 24px 22px;
+    border: 4px solid var(--ink);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .warn::backdrop { background: rgba(21, 48, 43, 0.6); }
+  .warn-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 4px 6px;
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    background: var(--capsule);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .warn-label svg { width: 24px; height: 24px; }
+  .warn-title { margin-top: 14px; font-size: 28px; font-weight: 800; line-height: 1.25; letter-spacing: -0.01em; }
+  .warn-items { list-style: none; margin: 14px 0 0; padding: 0; }
+  .warn-items li { padding: 12px 0; border-top: 1px solid var(--line); font-size: 19px; line-height: 1.5; overflow-wrap: anywhere; }
+  .warn-items strong { display: block; font-size: 20px; }
+  .warn-advice { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 17px; color: var(--ink-soft); }
+  .warn-actions { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .warn-actions .btn { flex: none; }
+
+  /* ---------- 복용 시간 알림 ---------- */
+  .next-alarm {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border-left: 6px solid var(--capsule);
+    background: var(--surface);
+    border-radius: 0 12px 12px 0;
+  }
+  .next-alarm-when { font-size: 20px; font-weight: 700; line-height: 1.4; }
+  .next-alarm-note { margin-top: 4px; font-size: 15px; color: var(--ink-soft); }
+  .next-alarm .text-button { margin-top: 4px; min-height: 48px; padding: 8px 0; font-size: 16px; }
+  .remind-setting { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 16px; }
+  .remind-setting .input { width: auto; min-height: 48px; padding: 6px 10px; font-size: 17px; }
+  .alarm.is-remind .alarm-box { border-top-color: var(--ink); }
+  .alarm.is-remind .alarm-kind { color: var(--ink); }
+
+  .alarm {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    padding: 12px;
+    pointer-events: none;
+  }
+  .alarm[hidden] { display: none; }
+  .alarm-box {
+    pointer-events: auto;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--surface);
+    border: 4px solid var(--ink);
+    border-top: 14px solid var(--capsule);
+    border-radius: 20px;
+    animation: alarm-up .35s cubic-bezier(.2, .7, .2, 1) both;
+  }
+  @keyframes alarm-up { from { transform: translateY(40px); opacity: 0; } }
+  .alarm-kind { font-size: 16px; font-weight: 700; color: var(--ink-soft); }
+  .alarm-title { font-size: 28px; font-weight: 800; line-height: 1.25; letter-spacing: -0.01em; }
+  .alarm-meds { list-style: none; margin: 12px 0 0; padding: 0; }
+  .alarm-meds li { padding: 10px 0; border-top: 1px solid var(--line); font-size: 20px; font-weight: 500; overflow-wrap: anywhere; }
+  .alarm-meds .med-kind { margin-right: 8px; }
+  .alarm-more { margin-top: 8px; font-size: 16px; color: var(--ink-soft); }
+  .alarm-box .btn { margin-top: 12px; width: 100%; }
+  .alarm-box .btn[hidden] { display: none; }
+  @media (prefers-reduced-motion: reduce) { .alarm-box { animation: none; } }
+
+  /* ---------- 언어 전환 ---------- */
+  body { position: relative; }
+  .page { padding-top: 76px; }   /* 좁은 화면에서 서비스 이름과 언어 단추가 겹치지 않게 */
+  .lang-toggle { position: absolute; top: 12px; right: 12px; z-index: 5; min-height: 48px; padding: 8px 16px; border-radius: 999px; font-size: 16px; }
+
+  /* ---------- 넓은 화면 ---------- */
+  @media (min-width: 900px) {
+    .page {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+      column-gap: 64px;
+      row-gap: 48px;
+      padding: 72px 32px 40px;
+      align-items: start;
+    }
+    .footnote { grid-column: 1 / -1; }
+    .today { padding: 32px 28px; }
+  }
+
+  @media (max-width: 380px) {
+    .dose { grid-template-columns: 1fr auto; }
+    .dose-time { grid-column: 1 / -1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .day-fill { animation: none; }
+    .action:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <button type="button" class="btn lang-toggle" id="lang-toggle" lang="en">English</button>
+
+  <main>
+  <div class="view page" id="view-home">
+
+    <section aria-labelledby="service-name">
+      <h1 class="service-name" id="service-name">MediTiming</h1>
+      <p class="intro-line">여러 약을 시간 맞춰 챙겨야 하는 분과 그 가족을 위한 복약 관리 서비스</p>
+
+      <div class="actions">
+        <button type="button" class="action is-main" id="go-add">
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="15" width="34" height="14" rx="7"/>
+            <path d="M22 15v14"/>
+            <path d="M33 4v8M29 8h8"/>
+          </svg>
+          <span>
+            <span class="action-name">약 등록하기</span>
+            <span class="action-desc">먹는 약과 복용 시간을 등록해요</span>
+          </span>
+        </button>
+
+        <button type="button" class="action" id="go-today">
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="22" cy="22" r="16"/>
+            <path d="M14.5 22.5l5 5 10-11"/>
+          </svg>
+          <span>
+            <span class="action-name">오늘 먹을 약 체크하기</span>
+            <span class="action-desc">오늘 먹을 약을 보고 먹은 약을 기록해요</span>
+          </span>
+        </button>
+
+        <button type="button" class="action" id="go-match">
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="9" width="24" height="12" rx="6"/>
+            <circle cx="28" cy="29" r="7"/>
+            <path d="M33.500 34.500l6 6"/>
+          </svg>
+          <span>
+            <span class="action-name">약 궁합 확인하기</span>
+            <span class="action-desc">약과 영양제를 함께 먹어도 되는지 봐요</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="home-links">
+        <button type="button" class="text-button" id="go-list">내 약 목록 보기</button>
+        <button type="button" class="text-button" id="go-history">복용 기록 보기</button>
+        <button type="button" class="text-button" id="go-guardian">보호자 설정</button>
+      </div>
+
+      <div class="next-alarm">
+        <p class="next-alarm-when" id="next-alarm-when"></p>
+        <p class="next-alarm-note">이 화면을 열어 둔 동안에만 알림이 나옵니다.</p>
+        <label class="remind-setting" for="remind-after">
+          먹었다는 기록이 없으면
+          <select class="input" id="remind-after"></select>
+          다시 알림
+        </label>
+        <button type="button" class="text-button" id="alarm-preview">알림 미리 보기</button>
+      </div>
+      <p class="notice" id="notice" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="today" aria-labelledby="today-title">
+      <h2 id="today-title">오늘 이렇게 챙겨 드려요</h2>
+      <p class="today-sub">하루 세 번 약을 먹는 날의 모습</p>
+
+      <div class="day" aria-hidden="true">
+        <span class="now-label">지금 오전 10:20</span>
+        <div class="day-track">
+          <div class="day-fill"></div>
+          <span class="dose-dot" style="left: 11.1%"></span>
+          <span class="dose-dot" style="left: 38.9%"></span>
+          <span class="dose-dot" style="left: 72.2%"></span>
+        </div>
+        <div class="day-ends"><span>오전 6시</span><span>밤 12시</span></div>
+      </div>
+
+      <ul class="doses">
+        <li class="dose is-done">
+          <span class="dose-time">오전 8:00</span>
+          <span class="dose-what">아침 약 2알</span>
+          <span class="dose-state">
+            <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="9"/><path d="M7 11.5l3 3 5.5-6"/></svg>
+            먹었어요
+          </span>
+        </li>
+        <li class="dose is-next">
+          <span class="dose-time">오후 1:00</span>
+          <span class="dose-what">점심 약 1알</span>
+          <span class="dose-state">
+            <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3a5.5 5.5 0 0 0-5.5 5.5V13L4 16h14l-1.500-3V8.500A5.500 5.500 0 0 0 11 3z"/><path d="M9 19h4"/></svg>
+            다음 알림
+          </span>
+        </li>
+        <li class="dose is-later">
+          <span class="dose-time">오후 7:00</span>
+          <span class="dose-what">저녁 약 2알, 영양제 1알</span>
+          <span class="dose-state">
+            <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="9"/><path d="M11 6v5.500l3.500 2"/></svg>
+            예정
+          </span>
+        </li>
+      </ul>
+
+      <p class="sample-note">예시 데이터입니다. 실제 복약 정보가 아닙니다.</p>
+    </section>
+
+    <p class="footnote">MediTiming은 복약을 돕는 도구입니다. 약에 대한 판단은 의사나 약사와 상담해 주세요.</p>
+  </div>
+
+  <!-- ===== 약 등록·수정 ===== -->
+  <div class="view sheet" id="view-form" hidden>
+    <button type="button" class="back" data-go="home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+      처음으로
+    </button>
+    <h1 class="sheet-title" id="form-title" tabindex="-1">약 등록하기</h1>
+    <p class="sheet-sub">먹는 약 하나의 이름과 복용 시간을 적어 주세요.</p>
+
+    <form class="med-form" id="med-form" novalidate>
+      <div class="field">
+        <p class="field-name">사진으로 이름 채우기</p>
+        <p class="field-help">약 봉투나 약 상자의 글자가 잘 보이게 찍어 주세요. 사진은 이 브라우저 밖으로 보내지 않고, 저장하지도 않습니다.</p>
+        <div class="row">
+          <button type="button" class="btn" id="photo-pick">사진 찍기 또는 고르기</button>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" hidden>
+        <div id="photo-area" hidden>
+          <img class="photo-preview" id="photo-preview" alt="고른 약 사진">
+          <p class="photo-status" id="photo-status" role="status" aria-live="polite"></p>
+          <div class="photo-names" id="photo-names"></div>
+        </div>
+      </div>
+
+      <fieldset class="field">
+        <legend>종류</legend>
+        <div class="row">
+          <label class="pick"><input type="radio" name="kind" value="medicine" checked><span>약</span></label>
+          <label class="pick"><input type="radio" name="kind" value="supplement"><span>영양제</span></label>
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label class="field-name" for="med-name">약 이름</label>
+        <input class="input" id="med-name" type="text" maxlength="30" autocomplete="off" placeholder="예: 가상 약 1">
+      </div>
+
+      <div class="field">
+        <label class="field-name" for="med-amount">한 번에 먹는 양</label>
+        <div class="row">
+          <input class="input" id="med-amount" type="number" inputmode="decimal" min="0.5" max="99" step="0.5" value="1">
+          <select class="input" id="med-unit" aria-label="단위">
+            <option value="알">알</option>
+            <option value="포">포</option>
+            <option value="mL">mL</option>
+            <option value="방울">방울</option>
+          </select>
+        </div>
+      </div>
+
+      <fieldset class="field">
+        <legend>복용 시간</legend>
+        <p class="field-help">자주 쓰는 시간을 누르거나 직접 추가하세요. 하루에 여러 번이면 모두 넣습니다.</p>
+        <div class="row" id="time-presets">
+          <button type="button" class="btn" data-time="08:00">아침 8시</button>
+          <button type="button" class="btn" data-time="13:00">점심 1시</button>
+          <button type="button" class="btn" data-time="19:00">저녁 7시</button>
+          <button type="button" class="btn" data-time="22:00">자기 전 10시</button>
+          <button type="button" class="btn" id="time-add">직접 추가</button>
+        </div>
+        <ul class="time-list" id="time-list"></ul>
+        <p class="time-empty" id="time-empty">아직 넣은 시간이 없어요.</p>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>복용 요일</legend>
+        <div class="row" id="day-picks">
+          <label class="pick is-day"><input type="checkbox" name="day" value="1" checked><span>월</span></label>
+          <label class="pick is-day"><input type="checkbox" name="day" value="2" checked><span>화</span></label>
+          <label class="pick is-day"><input type="checkbox" name="day" value="3" checked><span>수</span></label>
+          <label class="pick is-day"><input type="checkbox" name="day" value="4" checked><span>목</span></label>
+          <label class="pick is-day"><input type="checkbox" name="day" value="5" checked><span>금</span></label>
+          <label class="pick is-day"><input type="checkbox" name="day" value="6" checked><span>토</span></label>
+          <label class="pick is-day"><input type="checkbox" name="day" value="0" checked><span>일</span></label>
+        </div>
+        <div class="row gap-top">
+          <button type="button" class="btn" id="day-all">매일로 맞추기</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>복용 기간</legend>
+        <label class="sub-label" for="med-start">시작하는 날</label>
+        <input class="input" id="med-start" type="date">
+        <div class="row gap-top">
+          <label class="pick"><input type="checkbox" id="med-noend" checked><span>끝나는 날 없이 계속 복용</span></label>
+        </div>
+        <label class="sub-label gap-top" for="med-end">끝나는 날</label>
+        <input class="input" id="med-end" type="date" disabled>
+      </fieldset>
+
+      <div class="form-problems" id="form-problems" role="alert" tabindex="-1" hidden></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn is-main is-big" id="form-save">약 저장하기</button>
+        <button type="button" class="btn is-big" data-go="back">취소</button>
+      </div>
+      <p class="storage-note">적은 내용은 이 브라우저에만 저장됩니다. 연습할 때는 실제 정보 대신 예시 이름을 써 주세요.</p>
+    </form>
+  </div>
+
+  <!-- ===== 내 약 목록 ===== -->
+  <div class="view sheet" id="view-list" hidden>
+    <button type="button" class="back" data-go="home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+      처음으로
+    </button>
+    <h1 class="sheet-title" id="list-title" tabindex="-1">내 약 목록</h1>
+    <p class="list-notice" id="list-notice" role="status" aria-live="polite"></p>
+    <div class="list-alert" id="list-alert" role="alert" hidden>
+      <p id="list-alert-text"></p>
+      <button type="button" class="btn is-main" id="list-alert-go">약 궁합 확인하기</button>
+    </div>
+
+    <div class="empty" id="list-empty" hidden>
+      <p><strong>아직 등록한 약이 없어요.</strong></p>
+      <p>먹는 약을 등록하면 여기에 모아 보여 드립니다.</p>
+      <div class="row">
+        <button type="button" class="btn is-main" data-go="add">약 등록하기</button>
+        <button type="button" class="btn" id="seed">가상 약 넣어 보기</button>
+      </div>
+    </div>
+
+    <ul class="med-list" id="med-list"></ul>
+
+    <div class="list-foot" id="list-foot" hidden>
+      <button type="button" class="btn is-main is-big" data-go="add">약 하나 더 등록하기</button>
+    </div>
+  </div>
+
+  <!-- ===== 오늘 먹을 약 ===== -->
+  <div class="view sheet" id="view-today" hidden>
+    <button type="button" class="back" data-go="home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+      처음으로
+    </button>
+    <h1 class="sheet-title" id="today-title" tabindex="-1">오늘 먹을 약</h1>
+    <p class="sheet-sub" id="today-date"></p>
+    <p class="today-summary" id="today-summary" role="status" aria-live="polite"></p>
+
+    <div class="empty" id="today-empty" hidden>
+      <p><strong>오늘 먹을 약이 없어요.</strong></p>
+      <p>약을 등록하면 복용 시간순으로 여기에 보여 드립니다.</p>
+      <div class="row">
+        <button type="button" class="btn is-main" data-go="add">약 등록하기</button>
+      </div>
+    </div>
+
+    <div id="today-slots"></div>
+  </div>
+
+  <!-- ===== 보호자 설정 ===== -->
+  <div class="view sheet" id="view-guardian" hidden>
+    <button type="button" class="back" data-go="home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+      처음으로
+    </button>
+    <h1 class="sheet-title" id="guardian-title" tabindex="-1">보호자 설정</h1>
+    <p class="sheet-sub">약을 오래 기록하지 않으면 보호자에게 알려 줄 문자를 만듭니다.</p>
+
+    <div class="sample-warning">
+      <strong>실제 문자는 보내지 않습니다.</strong>
+      <p>보낼 문자의 내용을 화면에 미리 보여 주기만 합니다. 연습할 때는 실제 이름과 전화번호 대신 예시를 써 주세요.</p>
+    </div>
+
+    <form class="med-form" id="guardian-form" novalidate>
+      <div class="field">
+        <label class="field-name" for="guardian-name">보호자 이름</label>
+        <input class="input" id="guardian-name" type="text" maxlength="20" autocomplete="off" placeholder="예: 가상 보호자 1">
+      </div>
+
+      <div class="field">
+        <label class="field-name" for="guardian-phone">보호자 전화번호</label>
+        <input class="input" id="guardian-phone" type="tel" inputmode="tel" maxlength="13" autocomplete="off" placeholder="예: 000-0000-0000">
+        <div class="row gap-top">
+          <button type="button" class="btn" id="guardian-sample">예시로 채우기</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-name" for="guardian-after">문자를 만드는 때</label>
+        <div class="row">
+          <span>복용 시간에서</span>
+          <select class="input" id="guardian-after" style="flex:0 1 auto"></select>
+          <span>지나도 기록이 없을 때</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="check-line" for="guardian-on">
+          <input type="checkbox" id="guardian-on">
+          <span>약을 놓쳤을 때 이 보호자에게 안내 문자를 보내는 데 동의하고, 문자 만들기를 켭니다. 언제든 다시 끌 수 있습니다.</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <p class="field-name">보낼 문자 내용</p>
+        <p class="field-help">다른 사람이 볼 수 있어 약 이름은 넣지 않습니다.</p>
+        <p class="bubble" id="guardian-example"></p>
+      </div>
+
+      <div class="form-problems" id="guardian-problems" role="alert" tabindex="-1" hidden></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn is-main is-big">보호자 설정 저장하기</button>
+      </div>
+      <p class="list-notice" id="guardian-notice" role="status" aria-live="polite"></p>
+    </form>
+
+    <h2 class="match-heading">만들어진 문자</h2>
+    <p class="day-none" id="outbox-empty">아직 만들어진 문자가 없어요.</p>
+    <ul class="outbox" id="outbox"></ul>
+  </div>
+
+  <!-- ===== 약 궁합 ===== -->
+  <div class="view sheet" id="view-match" hidden>
+    <button type="button" class="back" data-go="home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+      처음으로
+    </button>
+    <h1 class="sheet-title" id="match-title" tabindex="-1">약 궁합 확인</h1>
+    <p class="sheet-sub">등록한 약과 영양제를 둘씩 짝지어, 함께 먹을 때 주의할 조합이 있는지 봅니다.</p>
+
+    <div class="sample-warning">
+      <strong>화면 시연용 예시 정보입니다.</strong>
+      <p>검증된 의약품 데이터가 아니므로 실제 복약 판단에 쓰지 마세요. 약에 대한 판단은 의사나 약사와 상담해 주세요.</p>
+    </div>
+
+    <div class="empty" id="match-empty" hidden>
+      <p><strong>확인할 조합이 아직 없어요.</strong></p>
+      <p>약이나 영양제를 두 가지 이상 등록하면 조합을 확인해 드립니다.</p>
+      <div class="row">
+        <button type="button" class="btn is-main" data-go="add">약 등록하기</button>
+      </div>
+    </div>
+
+    <div id="match-result" hidden>
+      <h2 class="match-heading" id="match-heading"></h2>
+      <ul class="combos" id="combos"></ul>
+
+      <h2 class="match-heading" id="unknown-heading">정보가 없는 조합</h2>
+      <div class="unknown">
+        <p id="unknown-text"></p>
+        <p><strong>정보가 없다는 것은 함께 먹어도 안전하다는 뜻이 아닙니다.</strong></p>
+        <details id="unknown-details">
+          <summary>정보가 없는 조합 모두 보기</summary>
+          <ul id="unknown-list"></ul>
+        </details>
+      </div>
+    </div>
+
+    <p class="known-names" id="known-names"></p>
+  </div>
+
+  <!-- ===== 날짜별 복용 기록 ===== -->
+  <div class="view sheet" id="view-history" hidden>
+    <button type="button" class="back" data-go="home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+      처음으로
+    </button>
+    <h1 class="sheet-title" id="history-title" tabindex="-1">복용 기록</h1>
+    <p class="sheet-sub">날짜를 누르면 그날 먹은 약과 놓친 약을 보여 드립니다.</p>
+
+    <div class="cal-head">
+      <button type="button" class="btn" id="cal-prev" aria-label="이전 달">이전 달</button>
+      <p class="cal-month" id="cal-month" aria-live="polite"></p>
+      <button type="button" class="btn" id="cal-next" aria-label="다음 달">다음 달</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <ul class="cal-legend">
+      <li><b>✓</b>모두 먹은 날</li>
+      <li><b>!</b>놓친 약이 있는 날</li>
+      <li><span class="today-key"></span>오늘</li>
+    </ul>
+
+    <h2 class="day-title" id="day-title" tabindex="-1"></h2>
+    <p class="today-summary" id="day-summary"></p>
+    <p class="day-none" id="day-none" hidden></p>
+    <ul class="takes" id="day-list"></ul>
+  </div>
+
+  </main>
+
+  <!-- ===== 복용 시간 알림: 어느 화면에서든 아래쪽에 뜬다 ===== -->
+  <div class="alarm" id="alarm" hidden>
+    <div class="alarm-box" role="alert">
+      <p class="alarm-kind" id="alarm-kind" hidden>미리 보기입니다</p>
+      <h2 class="alarm-title" id="alarm-title"></h2>
+      <ul class="alarm-meds" id="alarm-meds"></ul>
+      <p class="alarm-more" id="alarm-advice" hidden>놓친 약을 어떻게 할지는 약마다 달라요. 헷갈리면 의사나 약사에게 물어보세요.</p>
+      <p class="alarm-more" id="alarm-more" hidden></p>
+      <button type="button" class="btn is-main is-big" id="alarm-take">먹었어요</button>
+      <button type="button" class="btn" id="alarm-close">알림만 닫기</button>
+    </div>
+  </div>
+
+  <!-- ===== 보호자 문자 미리보기: 문자를 만들 때가 되면 위쪽에 뜬다 ===== -->
+  <div class="sms" id="sms" hidden>
+    <div class="sms-box" role="alert">
+      <p class="sms-label">문자 미리 보기, 실제로 보내지 않아요</p>
+      <h2 class="sms-title" id="sms-title"></h2>
+      <p class="sms-to" id="sms-to"></p>
+      <p class="bubble" id="sms-text"></p>
+      <p class="sms-meta" id="sms-more" hidden></p>
+      <button type="button" class="btn is-main" id="sms-close">확인했어요</button>
+    </div>
+  </div>
+
+  <!-- ===== 중복 복용 경고 ===== -->
+  <dialog class="warn" id="warn" aria-labelledby="warn-title">
+    <p class="warn-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.500L2.500 20h19L12 3.500z"/><path d="M12 10v4.500M12 17.200v.300"/></svg>
+      중복 복용 경고
+    </p>
+    <h2 class="warn-title" id="warn-title"></h2>
+    <ul class="warn-items" id="warn-items"></ul>
+    <p class="warn-advice">한 번 더 먹기 전에 확인해 주세요. 헷갈리면 의사나 약사에게 물어보세요.</p>
+    <div class="warn-actions">
+      <button type="button" class="btn is-main is-big" id="warn-skip">기록하지 않기</button>
+      <button type="button" class="btn" id="warn-force">그래도 기록하기</button>
+    </div>
+  </dialog>
+
+  <script src="data/sample-data.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var STORAGE_KEY = 'meditiming.meds';
+      var DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+      var DAY_NAMES = { 0: '일', 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토' };
+
+      function $(id) { return document.getElementById(id); }
+
+      /* ---------- 저장 ---------- */
+      function loadMeds() {
+        try {
+          var parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) { return []; }
+      }
+      function saveMeds() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(meds)); return true; }
+        catch (e) { return false; }
+      }
+
+      var meds = loadMeds();
+      var editingId = null;      // 고치는 중인 약의 id, 새 등록이면 null
+      var confirmingId = null;   // 삭제를 되묻는 중인 약의 id
+      var times = [];            // 양식에 넣은 복용 시간 ('HH:MM')
+      var cameFrom = 'home';
+
+      /* ---------- 표시용 글자 ---------- */
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      function todayString() {
+        var d = new Date();
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+      }
+      function timeLabel(t) {
+        var h = Number(t.slice(0, 2)), m = t.slice(3, 5);
+        var half = h < 12 ? '오전' : '오후';
+        var h12 = h % 12 === 0 ? 12 : h % 12;
+        return half + ' ' + h12 + ':' + m;
+      }
+      function dateLabel(s) {
+        var p = s.split('-');
+        return p[0] + '년 ' + Number(p[1]) + '월 ' + Number(p[2]) + '일';
+      }
+      function daysLabel(days) {
+        if (days.length === 7) { return '매일'; }
+        return DAY_ORDER.filter(function (d) { return days.indexOf(d) !== -1; })
+          .map(function (d) { return DAY_NAMES[d]; }).join(', ');
+      }
+      function periodLabel(med) {
+        return med.end ? dateLabel(med.start) + '부터 ' + dateLabel(med.end) + '까지'
+                       : dateLabel(med.start) + '부터 계속';
+      }
+
+      /* ---------- 화면 전환 ---------- */
+      function show(name) {
+        ['home', 'form', 'list', 'today', 'history', 'match', 'guardian'].forEach(function (v) { $('view-' + v).hidden = (v !== name); });
+        window.scrollTo(0, 0);
+        if (name === 'guardian') { $('guardian-title').focus(); }
+        if (name === 'match') { $('match-title').focus(); }
+        if (name === 'history') { $('history-title').focus(); }
+        if (name === 'today') { $('today-title').focus(); }
+        if (name === 'form') { $('form-title').focus(); }
+        if (name === 'list') { $('list-title').focus(); }
+        updateHome();
+      }
+      function updateHome() {
+        $('go-list').textContent = meds.length ? '내 약 목록 보기 (' + meds.length + '개)' : '내 약 목록 보기';
+        refreshAlarms();
+      }
+
+      /* ---------- 양식 ---------- */
+      function renderTimes() {
+        var list = $('time-list');
+        list.textContent = '';
+        times.forEach(function (t, i) {
+          var li = document.createElement('li');
+          li.className = 'time-item';
+          var input = document.createElement('input');
+          input.type = 'time';
+          input.className = 'input';
+          input.value = t;
+          input.setAttribute('aria-label', '복용 시간 ' + (i + 1));
+          input.addEventListener('change', function () { times[i] = input.value; syncPresets(); });
+          var remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'btn';
+          remove.textContent = '빼기';
+          remove.setAttribute('aria-label', (t ? timeLabel(t) : '빈 시간') + ' 빼기');
+          remove.addEventListener('click', function () { times.splice(i, 1); renderTimes(); });
+          li.appendChild(input);
+          li.appendChild(remove);
+          list.appendChild(li);
+        });
+        $('time-empty').hidden = times.length > 0;
+        syncPresets();
+      }
+      function syncPresets() {
+        document.querySelectorAll('#time-presets [data-time]').forEach(function (b) {
+          var on = times.indexOf(b.dataset.time) !== -1;
+          b.classList.toggle('is-main', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      }
+      function setDays(days) {
+        document.querySelectorAll('#day-picks input').forEach(function (c) {
+          c.checked = days.indexOf(Number(c.value)) !== -1;
+        });
+      }
+      function getDays() {
+        var out = [];
+        document.querySelectorAll('#day-picks input:checked').forEach(function (c) { out.push(Number(c.value)); });
+        return out;
+      }
+      function syncEnd() {
+        var noEnd = $('med-noend').checked;
+        $('med-end').disabled = noEnd;
+        if (noEnd) { $('med-end').value = ''; }
+      }
+      function clearProblems() {
+        $('form-problems').hidden = true;
+        $('form-problems').textContent = '';
+        document.querySelectorAll('#med-form [aria-invalid]').forEach(function (el) { el.removeAttribute('aria-invalid'); });
+      }
+
+      function openForm(med) {
+        editingId = med ? med.id : null;
+        clearProblems();
+        resetPhoto();
+        $('form-title').textContent = med ? '약 고치기' : '약 등록하기';
+        $('form-save').textContent = med ? '고친 내용 저장하기' : '약 저장하기';
+        document.querySelector('#med-form [name="kind"][value="' + (med ? med.kind : 'medicine') + '"]').checked = true;
+        $('med-name').value = med ? med.name : '';
+        $('med-amount').value = med ? med.amount : 1;
+        $('med-unit').value = med ? med.unit : '알';
+        times = med ? med.times.slice() : [];
+        renderTimes();
+        setDays(med ? med.days : DAY_ORDER);
+        $('med-start').value = med ? med.start : todayString();
+        $('med-noend').checked = med ? !med.end : true;
+        syncEnd();
+        if (med && med.end) { $('med-end').value = med.end; }
+        show('form');
+      }
+
+      function readForm() {
+        var problems = [];
+        var name = $('med-name').value.trim();
+        var amount = Number($('med-amount').value);
+        var cleanTimes = times.filter(Boolean).filter(function (t, i, all) { return all.indexOf(t) === i; }).sort();
+        var days = getDays();
+        var start = $('med-start').value;
+        var noEnd = $('med-noend').checked;
+        var end = noEnd ? null : $('med-end').value;
+
+        if (!name) { problems.push({ text: '약 이름을 적어 주세요.', el: $('med-name') }); }
+        if (!(amount > 0)) { problems.push({ text: '한 번에 먹는 양을 0보다 큰 숫자로 적어 주세요.', el: $('med-amount') }); }
+        if (!cleanTimes.length) { problems.push({ text: '복용 시간을 하나 이상 넣어 주세요.' }); }
+        if (!days.length) { problems.push({ text: '복용 요일을 하나 이상 골라 주세요.' }); }
+        if (!start) { problems.push({ text: '시작하는 날을 골라 주세요.', el: $('med-start') }); }
+        if (!noEnd && !end) { problems.push({ text: '끝나는 날을 고르거나 "계속 복용"을 선택해 주세요.', el: $('med-end') }); }
+        if (!noEnd && end && start && end < start) { problems.push({ text: '끝나는 날이 시작하는 날보다 빠릅니다. 날짜를 다시 골라 주세요.', el: $('med-end') }); }
+
+        return {
+          problems: problems,
+          med: {
+            kind: document.querySelector('#med-form [name="kind"]:checked').value,
+            name: name, amount: amount, unit: $('med-unit').value,
+            times: cleanTimes, days: days, start: start, end: end || null
+          }
+        };
+      }
+
+      function showProblems(problems) {
+        var box = $('form-problems');
+        box.textContent = '';
+        var head = document.createElement('strong');
+        head.textContent = '저장하려면 아래 내용을 고쳐 주세요.';
+        var ul = document.createElement('ul');
+        problems.forEach(function (p) {
+          var li = document.createElement('li');
+          li.textContent = p.text;
+          ul.appendChild(li);
+          if (p.el) { p.el.setAttribute('aria-invalid', 'true'); }
+        });
+        box.appendChild(head);
+        box.appendChild(ul);
+        box.hidden = false;
+        box.focus();
+      }
+
+      $('med-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        clearProblems();
+        var result = readForm();
+        if (result.problems.length) { showProblems(result.problems); return; }
+
+        var med = result.med;
+        var message;
+        if (editingId) {
+          med.id = editingId;
+          meds = meds.map(function (m) { return m.id === editingId ? med : m; });
+          message = "'" + med.name + "' 내용을 고쳤어요.";
+        } else {
+          med.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+          meds.push(med);
+          message = "'" + med.name + "' 저장했어요.";
+        }
+        if (!saveMeds()) { message += ' 다만 이 브라우저에 저장하지 못해, 창을 닫으면 사라집니다.'; }
+        // 약을 저장할 때마다 다른 약과의 궁합을 자동으로 검사한다
+        var hits = findCombos().found.filter(function (c) { return c.first.id === med.id || c.second.id === med.id; });
+        openList(message, hits.length ? "'" + med.name + "'은(는) 이미 등록한 약과 주의가 필요한 조합이 " + hits.length + '개 있어요.' : '');
+      });
+
+      /* ---------- 사진으로 약 이름 채우기 ----------
+         약 봉투·약 상자 사진의 글자를 브라우저 안에서 읽는다 (Tesseract.js, 처음 쓸 때 인터넷에서 불러온다).
+         사진은 밖으로 보내지 않고 저장하지도 않는다.
+         읽은 글자는 후보로만 보여 주고, 사용자가 고르고 확인해야 이름 칸에 들어간다. */
+      var OCR_SCRIPT = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+      var ocrLoading = null;
+      var photoUrl = null;
+      var photoRun = 0;   // 사진을 다시 고르면 앞선 인식 결과는 버린다
+
+      function loadOcr() {
+        if (window.Tesseract) { return Promise.resolve(); }
+        if (!ocrLoading) {
+          ocrLoading = new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.src = OCR_SCRIPT;
+            script.onload = function () { resolve(); };
+            script.onerror = function () { ocrLoading = null; reject(new Error('load')); };
+            document.head.appendChild(script);
+          });
+        }
+        return ocrLoading;
+      }
+
+      /* 읽은 글자에서 약 이름일 만한 줄만 고른다 */
+      function pickNames(text) {
+        var seen = {}, out = [];
+        String(text || '').split(/\r?\n/).forEach(function (raw) {
+          var line = raw.replace(/\s+/g, ' ').trim();
+          var letters = (line.match(/[가-힣A-Za-z]/g) || []).length;
+          var digits = (line.match(/[0-9]/g) || []).length;
+          if (letters < 2 || line.length > 40 || digits > letters) { return; }
+          line = line.slice(0, 30);
+          if (seen[line]) { return; }
+          seen[line] = true;
+          out.push(line);
+        });
+        return out.slice(0, 8);
+      }
+
+      function resetPhoto() {
+        photoRun++;
+        if (photoUrl) { URL.revokeObjectURL(photoUrl); photoUrl = null; }
+        $('photo-input').value = '';
+        $('photo-area').hidden = true;
+        $('photo-preview').removeAttribute('src');
+        $('photo-status').textContent = '';
+        $('photo-names').textContent = '';
+      }
+
+      function showNames(names) {
+        var box = $('photo-names');
+        box.textContent = '';
+        names.forEach(function (name) {
+          box.appendChild(makeButton(name, 'btn', function () {
+            $('med-name').value = name;
+            $('photo-status').textContent = "'" + name + "'을(를) 약 이름 칸에 넣었어요. 사진과 같은지 확인하고 틀린 글자는 고쳐 주세요.";
+            $('med-name').focus();
+          }));
+        });
+      }
+
+      function readPhoto(file) {
+        resetPhoto();
+        var run = photoRun;
+        photoUrl = URL.createObjectURL(file);
+        $('photo-preview').src = photoUrl;
+        $('photo-area').hidden = false;
+        $('photo-status').textContent = '글자 읽는 도구를 불러오는 중이에요. 처음에는 시간이 걸릴 수 있어요.';
+
+        var worker = null;
+        loadOcr().then(function () {
+          return window.Tesseract.createWorker('kor+eng', 1, {
+            logger: function (m) {
+              if (run === photoRun && m.status === 'recognizing text') {
+                $('photo-status').textContent = '사진의 글자를 읽는 중이에요. ' + Math.round(m.progress * 100) + '%';
+              }
+            }
+          });
+        }).then(function (w) {
+          worker = w;
+          return worker.recognize(file);
+        }).then(function (result) {
+          if (run !== photoRun) { return; }
+          var names = pickNames(result && result.data ? result.data.text : '');
+          if (names.length) {
+            $('photo-status').textContent = '읽은 글자예요. 약 이름을 골라 주세요. 틀리게 읽었을 수 있으니 사진과 꼭 비교해 주세요.';
+            showNames(names);
+          } else {
+            $('photo-status').textContent = '사진에서 글자를 읽지 못했어요. 사진을 보며 약 이름을 직접 적어 주세요.';
+          }
+        }).catch(function () {
+          if (run !== photoRun) { return; }
+          $('photo-status').textContent = '글자 읽는 도구를 쓸 수 없어요. 인터넷 연결을 확인하거나, 사진을 보며 약 이름을 직접 적어 주세요.';
+        }).then(function () {
+          if (worker) { worker.terminate(); }
+        });
+      }
+
+      $('photo-pick').addEventListener('click', function () { $('photo-input').click(); });
+      $('photo-input').addEventListener('change', function () {
+        var file = $('photo-input').files && $('photo-input').files[0];
+        if (!file) { return; }
+        if (file.type.indexOf('image/') !== 0) {
+          resetPhoto();
+          $('photo-area').hidden = false;
+          $('photo-status').textContent = '사진 파일을 골라 주세요.';
+          return;
+        }
+        readPhoto(file);
+      });
+
+      /* ---------- 목록 ---------- */
+      function fact(dl, term, value) {
+        var dt = document.createElement('dt'); dt.textContent = term;
+        var dd = document.createElement('dd'); dd.textContent = value;
+        dl.appendChild(dt); dl.appendChild(dd);
+      }
+      function makeButton(text, className, onClick) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = className; b.textContent = text;
+        b.addEventListener('click', onClick);
+        return b;
+      }
+
+      function renderList() {
+        var list = $('med-list');
+        list.textContent = '';
+        meds.forEach(function (med) {
+          var li = document.createElement('li');
+          li.className = 'med';
+
+          var kind = document.createElement('span');
+          kind.className = 'med-kind' + (med.kind === 'supplement' ? ' is-supplement' : '');
+          kind.textContent = med.kind === 'supplement' ? '영양제' : '약';
+
+          var name = document.createElement('h2');
+          name.className = 'med-name';
+          name.textContent = med.name;
+
+          var dl = document.createElement('dl');
+          dl.className = 'med-facts';
+          fact(dl, '용량', '한 번에 ' + med.amount + med.unit);
+          fact(dl, '시간', med.times.map(timeLabel).join(', '));
+          fact(dl, '요일', daysLabel(med.days));
+          fact(dl, '기간', periodLabel(med));
+
+          var actions = document.createElement('div');
+          actions.className = 'med-actions';
+          if (confirmingId === med.id) {
+            var ask = document.createElement('p');
+            ask.className = 'med-confirm';
+            ask.textContent = "'" + med.name + "' 약을 목록에서 삭제할까요?";
+            actions.appendChild(ask);
+            var yes = makeButton('삭제하기', 'btn is-main', function () {
+              meds = meds.filter(function (m) { return m.id !== med.id; });
+              saveMeds();
+              openList("'" + med.name + "' 삭제했어요.");
+            });
+            actions.appendChild(yes);
+            actions.appendChild(makeButton('그대로 두기', 'btn', function () { confirmingId = null; renderList(); }));
+            setTimeout(function () { yes.focus(); }, 0);
+          } else {
+            actions.appendChild(makeButton('고치기', 'btn', function () { cameFrom = 'list'; openForm(med); }));
+            actions.appendChild(makeButton('삭제', 'btn', function () { confirmingId = med.id; renderList(); }));
+          }
+
+          li.appendChild(kind); li.appendChild(name); li.appendChild(dl); li.appendChild(actions);
+          list.appendChild(li);
+        });
+        $('list-empty').hidden = meds.length > 0;
+        $('list-foot').hidden = meds.length === 0;
+      }
+
+      function openList(message, comboAlert) {
+        confirmingId = null;
+        renderList();
+        show('list');
+        $('list-notice').textContent = message || '';
+        $('list-alert').hidden = !comboAlert;
+        $('list-alert-text').textContent = comboAlert || '';
+      }
+
+      /* 가상 데이터: data/sample-data.js에서 읽는다. 모두 지어낸 값이다.
+         파일을 못 읽었을 때는 아래 작은 목록을 대신 쓴다. */
+      var FALLBACK_SAMPLE = {
+        guardian: { name: '가상 보호자 1', phone: '000-0000-0000' },
+        meds: [
+          { id: 'sample-01', kind: 'medicine', name: '가상 약 1', amount: 1, unit: '알', times: ['08:00'], days: [1, 2, 3, 4, 5, 6, 0] },
+          { id: 'sample-02', kind: 'medicine', name: '가상 약 2', amount: 2, unit: '알', times: ['08:00', '13:00', '19:00'], days: [1, 2, 3, 4, 5, 6, 0] },
+          { id: 'sample-08', kind: 'supplement', name: '가상 영양제 1', amount: 1, unit: '알', times: ['13:00'], days: [1, 3, 5] }
+        ]
+      };
+      function sampleData() {
+        var loaded = window.MEDITIMING_SAMPLE;
+        return loaded && Array.isArray(loaded.meds) && loaded.meds.length ? loaded : FALLBACK_SAMPLE;
+      }
+      function parseDay(s) { var p = s.split('-'); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
+      function shiftDay(s, days) { var d = parseDay(s); d.setDate(d.getDate() + days); return dateString(d); }
+      function sampleName(name) {   // 영어 화면에서는 가상 이름도 영어로 넣는다
+        if (lang !== 'en') { return name; }
+        return name.replace(/^가상 약 /, 'Sample medicine ').replace(/^가상 영양제 /, 'Sample supplement ')
+                   .replace(/^가상 보호자 /, 'Sample caregiver ').replace(/^가상 사용자 /, 'Sample user ');
+      }
+      function seedExamples() {
+        var data = sampleData();
+        // 데이터의 날짜는 기준 날짜(referenceDate)에 맞춰 적혀 있다. 오늘 기준으로 옮겨서 언제 넣어도 같은 모습이 되게 한다.
+        var shift = data.referenceDate ? Math.round((parseDay(todayString()) - parseDay(data.referenceDate)) / 86400000) : 0;
+        meds = data.meds.map(function (m) {
+          return {
+            id: m.id, kind: m.kind === 'supplement' ? 'supplement' : 'medicine', name: sampleName(String(m.name)),
+            amount: Number(m.amount) || 1, unit: String(m.unit || '알'),
+            times: m.times.slice(), days: m.days.slice(),
+            start: m.start ? shiftDay(m.start, shift) : todayString(),
+            end: m.end ? shiftDay(m.end, shift) : null
+          };
+        });
+        saveMeds();
+        openList('가상 약 ' + meds.length + '개를 넣었어요. 실제 복약 정보가 아닙니다.');
+      }
+
+      /* ---------- 복용 여부 체크 ----------
+         '먹었어요'를 누르면 날짜·복용 시간·약과 함께 누른 시각을 기록한다.
+         잘못 눌렀으면 취소로 기록을 지운다. */
+      var RECORDS_KEY = 'meditiming.records';
+      var WEEKDAY_NAMES = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+      function loadRecords() {
+        try {
+          var parsed = JSON.parse(localStorage.getItem(RECORDS_KEY));
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) { return []; }
+      }
+      function saveRecords() {
+        try { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); return true; }
+        catch (e) { return false; }
+      }
+      var records = loadRecords();
+
+      function findRecord(day, time, medId) {
+        for (var i = 0; i < records.length; i++) {
+          var r = records[i];
+          if (r.date === day && r.time === time && r.medId === medId) { return r; }
+        }
+        return null;
+      }
+      function pendingAt(date, time) {
+        var day = dateString(date);
+        return medsAt(date, time).filter(function (m) { return !findRecord(day, time, m.id); });
+      }
+      function recordsFor(day, time, medId) {
+        return records.filter(function (r) { return r.date === day && r.time === time && r.medId === medId; });
+      }
+      function take(day, time, med) {
+        records.push({
+          date: day, time: time, medId: med.id,
+          name: med.name, kind: med.kind, amount: med.amount, unit: med.unit,   // 나중에 약을 지워도 기록은 읽을 수 있게 함께 적어 둔다
+          takenAt: clockString(new Date())
+        });
+        saveRecords();
+      }
+      function untake(day, time, medId) {
+        // 같은 회차를 여러 번 기록했으면 가장 나중 기록 하나만 지운다
+        for (var i = records.length - 1; i >= 0; i--) {
+          var r = records[i];
+          if (r.date === day && r.time === time && r.medId === medId) { records.splice(i, 1); break; }
+        }
+        saveRecords();
+      }
+
+      /* ---------- 중복 복용 경고 ----------
+         기록하려는 약이 아래 둘 중 하나면 경고한다. 경고를 보고도 기록할 수는 있다.
+         1) 같은 회차를 이미 기록했다
+         2) 같은 약(같은 등록 항목이거나 이름이 같은 약)을 최근 DUPLICATE_GAP_MINUTES분 안에 기록했다 */
+      var DUPLICATE_GAP_MINUTES = 120;
+
+      function minutesOf(clock) { return Number(clock.slice(0, 2)) * 60 + Number(clock.slice(3, 5)); }
+      function agoLabel(minutes) {
+        if (minutes < 1) { return '방금'; }
+        if (minutes < 60) { return minutes + '분 전'; }
+        var h = Math.floor(minutes / 60), m = minutes % 60;
+        return h + '시간' + (m ? ' ' + m + '분' : '') + ' 전';
+      }
+      function findDuplicate(day, time, med) {
+        var nowMinutes = minutesOf(clockString(new Date()));
+        var same = recordsFor(day, time, med.id);
+        if (same.length) {
+          var lastSame = same[same.length - 1];
+          return { med: med, time: time, last: lastSame, ago: nowMinutes - minutesOf(lastSame.takenAt), sameSlot: true };
+        }
+        var name = med.name.trim();
+        var recent = null;
+        records.forEach(function (r) {
+          if (r.date !== day || (r.medId !== med.id && r.name.trim() !== name)) { return; }
+          var ago = nowMinutes - minutesOf(r.takenAt);
+          if (ago >= 0 && ago < DUPLICATE_GAP_MINUTES && (!recent || ago < recent.ago)) { recent = { record: r, ago: ago }; }
+        });
+        return recent ? { med: med, time: time, last: recent.record, ago: recent.ago, sameSlot: false } : null;
+      }
+
+      var warnChoice = null;   // 경고 창이 닫힐 때 할 일 { force, skip }
+      var warnForce = false;
+
+      function openWarning(found, handlers) {
+        $('warn-title').textContent = found.length === 1 && found[0].sameSlot
+          ? '이 약은 이미 먹었다고 기록했어요'
+          : found.length === 1 ? '같은 약을 조금 전에 먹었다고 기록했어요'
+          : '이미 먹었다고 기록한 약이 ' + found.length + '가지 있어요';
+        var ul = $('warn-items');
+        ul.textContent = '';
+        found.forEach(function (f) {
+          var li = document.createElement('li');
+          var name = document.createElement('strong');
+          name.textContent = f.med.name + ' ' + f.med.amount + f.med.unit;
+          li.appendChild(name);
+          li.appendChild(document.createTextNode(
+            '마지막 복용 기록: 오늘 ' + timeLabel(f.last.takenAt) + ' (' + agoLabel(f.ago) + ')' +
+            (f.sameSlot ? '' : ', ' + timeLabel(f.last.time) + ' 회차')));
+          ul.appendChild(li);
+        });
+        warnChoice = handlers;
+        warnForce = false;
+        if (typeof $('warn').showModal === 'function') { $('warn').showModal(); $('warn-skip').focus(); }
+        else {   // 아주 오래된 브라우저: 기본 확인 창으로 대신한다
+          warnForce = window.confirm($('warn-title').textContent + '\n그래도 기록할까요?');
+          finishWarning();
+        }
+      }
+      function finishWarning() {
+        var choice = warnChoice;
+        warnChoice = null;
+        if (!choice) { return; }
+        if (warnForce) { choice.force(); } else if (choice.skip) { choice.skip(); }
+      }
+      $('warn-force').addEventListener('click', function () { warnForce = true; $('warn').close(); finishWarning(); });
+      $('warn-skip').addEventListener('click', function () { warnForce = false; $('warn').close(); finishWarning(); });
+      $('warn').addEventListener('cancel', function () { warnForce = false; finishWarning(); });   // Esc로 닫으면 '기록하지 않기'로 처리한다
+
+      /* 기록을 시도한다: 중복이면 경고부터 보여 준다 */
+      function tryTake(day, time, med, done) {
+        var found = findDuplicate(day, time, med);
+        if (!found) { take(day, time, med); done(true); return; }
+        openWarning([found], {
+          force: function () { take(day, time, med); done(true); },
+          skip: function () { done(false); }
+        });
+      }
+
+      function renderToday(focusKey) {
+        var now = new Date(), day = dateString(now), clock = clockString(now);
+        var slots = $('today-slots');
+        slots.textContent = '';
+        var total = 0, done = 0, focusTarget = null;
+
+        timesOn(now).forEach(function (time) {
+          var section = document.createElement('section');
+          section.className = 'slot';
+          var heading = document.createElement('h2');
+          heading.className = 'slot-time';
+          heading.textContent = timeLabel(time);
+          var ul = document.createElement('ul');
+          ul.className = 'takes';
+
+          medsAt(now, time).forEach(function (med) {
+            total++;
+            var record = findRecord(day, time, med.id);
+            var late = !record && time <= clock;
+            if (record) { done++; }
+
+            var li = document.createElement('li');
+            li.className = 'take' + (record ? ' is-done' : late ? ' is-late' : '');
+
+            var name = document.createElement('p');
+            name.className = 'take-name';
+            var kind = document.createElement('span');
+            kind.className = 'med-kind' + (med.kind === 'supplement' ? ' is-supplement' : '');
+            kind.textContent = med.kind === 'supplement' ? '영양제' : '약';
+            name.appendChild(kind);
+            name.appendChild(document.createTextNode(med.name + ' ' + med.amount + med.unit));
+
+            var state = document.createElement('p');
+            state.className = 'take-state';
+            var all = recordsFor(day, time, med.id);
+            state.textContent = !record ? (late ? '! 시간이 지났어요. 아직 기록이 없어요' : '예정')
+              : all.length === 1 ? '✓ ' + timeLabel(record.takenAt) + '에 먹었어요'
+              : '✓ ' + all.map(function (r) { return timeLabel(r.takenAt); }).join(', ') + '에 먹었어요 (' + all.length + '번 기록)';
+
+            var key = time + '|' + med.id;
+            var label = med.name + ' ' + timeLabel(time);
+            var buttons = document.createElement('div');
+            buttons.className = 'take-buttons';
+            var btn = makeButton(record ? '한 번 더 기록' : '먹었어요', record ? 'btn' : 'btn is-main', function () {
+              tryTake(day, time, med, function () { afterToggle(key); });
+            });
+            btn.setAttribute('aria-label', label + (record ? ' 한 번 더 기록' : ' 먹었어요'));
+            buttons.appendChild(btn);
+            if (record) {
+              var undo = makeButton('취소', 'btn', function () { untake(day, time, med.id); afterToggle(key); });
+              undo.setAttribute('aria-label', label + ' 복용 기록 취소');
+              buttons.appendChild(undo);
+            }
+            if (key === focusKey) { focusTarget = btn; }
+
+            li.appendChild(name); li.appendChild(state); li.appendChild(buttons);
+            ul.appendChild(li);
+          });
+
+          section.appendChild(heading); section.appendChild(ul);
+          slots.appendChild(section);
+        });
+
+        $('today-date').textContent = (now.getMonth() + 1) + '월 ' + now.getDate() + '일 ' + WEEKDAY_NAMES[now.getDay()];
+        $('today-empty').hidden = total > 0;
+        var summary = !total ? '' : done === total ? '오늘 약 ' + total + '번을 모두 먹었어요.'
+                                                  : '오늘 ' + total + '번 중 ' + done + '번 먹었어요.';
+        if (renderToday.lastSummary !== summary) { renderToday.lastSummary = summary; $('today-summary').textContent = summary; }
+        if (focusTarget) { focusTarget.focus(); }
+      }
+      function afterToggle(key) {
+        renderToday(key);
+        checkAlarms();     // 방금 기록한 약의 알림이 떠 있으면 내린다
+      }
+      function openToday() { renderToday(); show('today'); }
+
+      /* ---------- 약 궁합 ----------
+         등록한 약을 둘씩 짝지어 아래 예시 목록에 있는 조합인지 본다.
+         이 목록은 화면 시연용 예시이며 검증된 의약품 데이터가 아니다.
+         실제 서비스에서는 출처가 확인된 데이터로 바꿔야 한다 (기획서 6장).
+         약 이름에 들어 있는 낱말로 종류를 알아내므로, 목록에 없는 이름은 '정보 없음'이 된다. */
+      var COMBO_SOURCE = '예시 목록 (검증 전)';
+
+      var NAME_GROUPS = {
+        iron:      { label: '철분',          words: ['철분', '훼럼', 'iron'] },
+        calcium:   { label: '칼슘',          words: ['칼슘', 'calcium'] },
+        magnesium: { label: '마그네슘',      words: ['마그네슘', 'magnesium'] },
+        thyroid:   { label: '갑상선 호르몬제', words: ['갑상선', '레보티록신', '씬지로이드', '신지로이드', 'levothyroxine'] },
+        warfarin:  { label: '와파린',        words: ['와파린', '쿠마딘', 'warfarin'] },
+        vitaminK:  { label: '비타민 K',      words: ['비타민k', 'vitamink'] },
+        omega:     { label: '오메가3',       words: ['오메가3', 'omega3', 'omega'] },
+        ginkgo:    { label: '은행잎',        words: ['은행잎', '징코', 'ginkgo'] },
+        stJohn:    { label: '세인트존스워트', words: ['세인트존스워트', '성요한풀', 'stjohn'] },
+        antidepressant: { label: '항우울제', words: ['항우울제', '플루옥세틴', '설트랄린', '에스시탈로프람', '파록세틴'] },
+        antibiotic: { label: '일부 항생제(독시사이클린 등)', words: ['독시사이클린', '테트라사이클린', '미노사이클린', '시프로플록사신', '레보플록사신'] }
+      };
+
+      var LEVELS = {
+        avoid: { label: '함께 복용 금지', order: 0,
+                 icon: '<circle cx="12" cy="12" r="9"/><path d="M5.600 5.600l12.800 12.800"/>' },
+        gap:   { label: '시간 간격 두기', order: 1,
+                 icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.500l3.500 2"/>' },
+        ask:   { label: '전문가와 상담', order: 2,
+                 icon: '<path d="M4 5h16v11H10l-4.500 4v-4H4z"/><path d="M9 10.500h6"/>' }
+      };
+
+      var GAP_ACTION = '보통 시간 간격을 두고 먹도록 안내되는 조합이에요. 간격을 얼마나 둘지는 약사에게 확인하세요.';
+      var COMBO_RULES = [
+        { a: 'stJohn', b: 'antidepressant', level: 'avoid',
+          reason: '함께 먹으면 부작용 위험이 커질 수 있어, 같이 먹지 않도록 안내되는 조합이에요.',
+          action: '지금 함께 먹고 있다면 임의로 끊지 말고, 바로 의사나 약사와 상담하세요.' },
+        { a: 'iron', b: 'calcium', level: 'gap',
+          reason: '칼슘이 철분의 흡수를 줄일 수 있다고 알려져 있어요.', action: GAP_ACTION },
+        { a: 'iron', b: 'thyroid', level: 'gap',
+          reason: '철분이 갑상선 호르몬제의 흡수를 줄일 수 있다고 알려져 있어요.', action: GAP_ACTION },
+        { a: 'calcium', b: 'thyroid', level: 'gap',
+          reason: '칼슘이 갑상선 호르몬제의 흡수를 줄일 수 있다고 알려져 있어요.', action: GAP_ACTION },
+        { a: 'antibiotic', b: 'calcium', level: 'gap',
+          reason: '칼슘이 일부 항생제의 흡수를 줄일 수 있다고 알려져 있어요.', action: GAP_ACTION },
+        { a: 'antibiotic', b: 'iron', level: 'gap',
+          reason: '철분이 일부 항생제의 흡수를 줄일 수 있다고 알려져 있어요.', action: GAP_ACTION },
+        { a: 'antibiotic', b: 'magnesium', level: 'gap',
+          reason: '마그네슘이 일부 항생제의 흡수를 줄일 수 있다고 알려져 있어요.', action: GAP_ACTION },
+        { a: 'warfarin', b: 'vitaminK', level: 'ask',
+          reason: '비타민 K는 와파린의 효과에 영향을 줄 수 있다고 알려져 있어요.',
+          action: '비타민 K가 든 영양제를 새로 먹거나 끊기 전에 의사나 약사와 상담하세요.' },
+        { a: 'warfarin', b: 'omega', level: 'ask',
+          reason: '출혈과 관련해 주의가 필요할 수 있다고 알려진 조합이에요.',
+          action: '함께 먹어도 되는지 의사나 약사와 상담하세요.' },
+        { a: 'warfarin', b: 'ginkgo', level: 'ask',
+          reason: '출혈과 관련해 주의가 필요할 수 있다고 알려진 조합이에요.',
+          action: '함께 먹어도 되는지 의사나 약사와 상담하세요.' }
+      ];
+
+      function groupsOf(med) {
+        var name = med.name.toLowerCase().replace(/[\s\-·.]/g, '');
+        return Object.keys(NAME_GROUPS).filter(function (key) {
+          return NAME_GROUPS[key].words.some(function (w) { return name.indexOf(w) !== -1; });
+        });
+      }
+      function findCombos() {
+        var found = [], unknown = [];
+        for (var i = 0; i < meds.length; i++) {
+          for (var j = i + 1; j < meds.length; j++) {
+            var gi = groupsOf(meds[i]), gj = groupsOf(meds[j]);
+            var matched = COMBO_RULES.filter(function (r) {
+              return (gi.indexOf(r.a) !== -1 && gj.indexOf(r.b) !== -1) || (gi.indexOf(r.b) !== -1 && gj.indexOf(r.a) !== -1);
+            });
+            if (!matched.length) { unknown.push({ first: meds[i], second: meds[j] }); }
+            matched.forEach(function (r) { found.push({ first: meds[i], second: meds[j], rule: r }); });
+          }
+        }
+        found.sort(function (x, y) { return LEVELS[x.rule.level].order - LEVELS[y.rule.level].order; });
+        return { found: found, unknown: unknown };
+      }
+
+      function levelBadge(level) {
+        var badge = document.createElement('span');
+        badge.className = 'level is-' + level;
+        // 아이콘은 위 LEVELS에 적어 둔 고정된 그림이다 (사용자가 넣은 글자는 들어가지 않는다)
+        badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LEVELS[level].icon + '</svg>';
+        badge.appendChild(document.createTextNode(LEVELS[level].label));
+        return badge;
+      }
+      function addLine(parent, className, text) {
+        var p = document.createElement('p');
+        p.className = className;
+        p.textContent = text;
+        parent.appendChild(p);
+      }
+
+      function renderMatch() {
+        var result = findCombos();
+        $('match-empty').hidden = meds.length >= 2;
+        $('match-result').hidden = meds.length < 2;
+        $('known-names').textContent = '예시 목록이 알아보는 이름: ' +
+          Object.keys(NAME_GROUPS).map(function (k) { return NAME_GROUPS[k].label; }).join(', ') +
+          '. 약 이름에 이 낱말이 들어 있어야 조합을 찾습니다.';
+        if (meds.length < 2) { return; }
+
+        $('match-heading').textContent = result.found.length
+          ? '주의가 필요한 조합 ' + result.found.length + '개'
+          : '예시 목록에서 찾은 주의 조합이 없어요';
+        var list = $('combos');
+        list.textContent = '';
+        result.found.forEach(function (c) {
+          var li = document.createElement('li');
+          li.className = 'combo is-' + c.rule.level;
+          li.appendChild(levelBadge(c.rule.level));
+          addLine(li, 'combo-pair', c.first.name + ' + ' + c.second.name);
+          addLine(li, 'combo-reason', c.rule.reason);
+          var shared = c.first.times.filter(function (t) { return c.second.times.indexOf(t) !== -1; });
+          if (shared.length) {
+            addLine(li, 'combo-same', '지금은 두 가지 모두 ' + shared.map(timeLabel).join(', ') + '에 먹도록 등록되어 있어요.');
+          }
+          addLine(li, 'combo-do', c.rule.action);
+          addLine(li, 'combo-source', '출처: ' + COMBO_SOURCE);
+          list.appendChild(li);
+        });
+
+        var total = result.found.length + result.unknown.length;
+        $('unknown-heading').hidden = result.unknown.length === 0;
+        $('unknown-heading').nextElementSibling.hidden = result.unknown.length === 0;
+        $('unknown-text').textContent = '나머지 조합 ' + result.unknown.length + '개는 예시 목록에 정보가 없어요.';
+        var ul = $('unknown-list');
+        ul.textContent = '';
+        result.unknown.forEach(function (u) {
+          var li = document.createElement('li');
+          li.textContent = u.first.name + ' + ' + u.second.name;
+          ul.appendChild(li);
+        });
+        $('unknown-details').open = false;
+      }
+      function openMatch() { renderMatch(); show('match'); }
+
+      $('go-match').addEventListener('click', openMatch);
+      $('list-alert-go').addEventListener('click', openMatch);
+
+      /* ---------- 날짜별 복용 기록 ----------
+         달력에서 날짜를 고르면 그날의 복용·누락 내역을 보여 준다.
+         그날 먹을 약은 지금 등록된 일정으로 계산하고, 지운 약의 기록은 기록에 적어 둔 이름으로 보여 준다. */
+      var calMonth = null;      // 달력이 보여 주는 달의 1일
+      var calSelected = null;   // 고른 날짜 (Date)
+
+      function sameDay(a, b) { return dateString(a) === dateString(b); }
+
+      function dayEntries(date) {
+        var day = dateString(date), now = new Date();
+        var today = dateString(now), clock = clockString(now);
+        var entries = [], used = {};
+
+        timesOn(date).forEach(function (time) {
+          medsAt(date, time).forEach(function (med) {
+            var recs = recordsFor(day, time, med.id);
+            used[time + '|' + med.id] = true;
+            entries.push({
+              time: time, name: med.name, kind: med.kind, amount: med.amount, unit: med.unit, recs: recs,
+              status: recs.length ? 'done' : (day < today || (day === today && time <= clock)) ? 'missed' : 'planned'
+            });
+          });
+        });
+
+        // 일정에는 없지만 기록이 남아 있는 약 (나중에 지웠거나 시간을 바꾼 약)
+        var loose = {};
+        records.forEach(function (r) {
+          var key = r.time + '|' + r.medId;
+          if (r.date !== day || used[key]) { return; }
+          if (!loose[key]) {
+            loose[key] = { time: r.time, name: r.name, kind: r.kind, amount: r.amount, unit: r.unit, recs: [], status: 'done' };
+            entries.push(loose[key]);
+          }
+          loose[key].recs.push(r);
+        });
+
+        return entries.sort(function (a, b) { return a.time < b.time ? -1 : a.time > b.time ? 1 : 0; });
+      }
+      function dayMark(entries) {
+        if (!entries.length) { return ''; }
+        if (entries.some(function (e) { return e.status === 'missed'; })) { return 'missed'; }
+        if (entries.every(function (e) { return e.status === 'done'; })) { return 'done'; }
+        return '';
+      }
+
+      function renderCalendar() {
+        var year = calMonth.getFullYear(), month = calMonth.getMonth();
+        var today = new Date();
+        $('cal-month').textContent = year + '년 ' + (month + 1) + '월';
+        var grid = $('cal-grid');
+        grid.textContent = '';
+
+        ['일', '월', '화', '수', '목', '금', '토'].forEach(function (d) {
+          var head = document.createElement('div');
+          head.className = 'cal-dow';
+          head.setAttribute('aria-hidden', 'true');
+          head.textContent = d;
+          grid.appendChild(head);
+        });
+        for (var blank = 0; blank < new Date(year, month, 1).getDay(); blank++) {
+          grid.appendChild(document.createElement('div'));
+        }
+
+        var last = new Date(year, month + 1, 0).getDate();
+        for (var n = 1; n <= last; n++) {
+          (function (date) {
+            var mark = dayMark(dayEntries(date));
+            var cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'cal-day' + (mark ? ' is-' + mark : '') + (sameDay(date, today) ? ' is-today' : '');
+            cell.setAttribute('aria-pressed', calSelected && sameDay(date, calSelected) ? 'true' : 'false');
+            cell.setAttribute('aria-label',
+              (month + 1) + '월 ' + date.getDate() + '일 ' + WEEKDAY_NAMES[date.getDay()] +
+              (sameDay(date, today) ? ', 오늘' : '') +
+              (mark === 'done' ? ', 모두 먹은 날' : mark === 'missed' ? ', 놓친 약이 있는 날' : ''));
+            var num = document.createElement('span');
+            num.textContent = date.getDate();
+            var sign = document.createElement('span');
+            sign.className = 'cal-mark';
+            sign.setAttribute('aria-hidden', 'true');
+            sign.textContent = mark === 'done' ? '✓' : mark === 'missed' ? '!' : '';
+            cell.appendChild(num);
+            cell.appendChild(sign);
+            cell.addEventListener('click', function () { selectDay(date, true); });
+            grid.appendChild(cell);
+          })(new Date(year, month, n));
+        }
+      }
+
+      function renderDay() {
+        var date = calSelected, today = new Date();
+        var entries = dayEntries(date);
+        $('day-title').textContent = (date.getMonth() + 1) + '월 ' + date.getDate() + '일 ' + WEEKDAY_NAMES[date.getDay()] +
+                                     (sameDay(date, today) ? ' (오늘)' : '');
+        var list = $('day-list');
+        list.textContent = '';
+
+        var done = 0, missed = 0;
+        entries.forEach(function (e) {
+          if (e.status === 'done') { done++; }
+          if (e.status === 'missed') { missed++; }
+
+          var li = document.createElement('li');
+          li.className = 'take is-record' + (e.status === 'done' ? ' is-done' : e.status === 'missed' ? ' is-late' : '');
+          var clock = document.createElement('p');
+          clock.className = 'take-clock';
+          clock.textContent = timeLabel(e.time);
+          var name = document.createElement('p');
+          name.className = 'take-name';
+          var kind = document.createElement('span');
+          kind.className = 'med-kind' + (e.kind === 'supplement' ? ' is-supplement' : '');
+          kind.textContent = e.kind === 'supplement' ? '영양제' : '약';
+          name.appendChild(kind);
+          name.appendChild(document.createTextNode(e.name + ' ' + e.amount + e.unit));
+          var state = document.createElement('p');
+          state.className = 'take-state';
+          state.textContent = e.status === 'planned' ? '예정'
+            : e.status === 'missed' ? '! 놓쳤어요. 복용 기록이 없어요'
+            : '✓ ' + e.recs.map(function (r) { return timeLabel(r.takenAt); }).join(', ') + '에 먹었어요' +
+              (e.recs.length > 1 ? ' (' + e.recs.length + '번 기록)' : '');
+          li.appendChild(clock); li.appendChild(name); li.appendChild(state);
+          list.appendChild(li);
+        });
+
+        $('day-summary').textContent = !entries.length ? ''
+          : dateString(date) > dateString(today) ? '먹을 약 ' + entries.length + '번이 예정되어 있어요.'
+          : entries.length + '번 중 ' + done + '번 먹었어요.' + (missed ? ' 놓친 약 ' + missed + '번.' : '');
+        $('day-none').hidden = entries.length > 0;
+        $('day-none').textContent = dateString(date) > dateString(today) ? '이날 먹을 약이 없어요.' : '이날은 먹을 약도, 복용 기록도 없어요.';
+      }
+
+      function selectDay(date, moveFocus) {
+        calSelected = date;
+        calMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        renderCalendar();
+        renderDay();
+        if (moveFocus) { $('day-title').focus(); }
+      }
+      function moveMonth(step) {
+        calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + step, 1);
+        renderCalendar();
+      }
+      function openHistory() { selectDay(new Date(), false); show('history'); }
+
+      $('cal-prev').addEventListener('click', function () { moveMonth(-1); });
+      $('cal-next').addEventListener('click', function () { moveMonth(1); });
+      $('go-history').addEventListener('click', openHistory);
+
+      /* ---------- 복용 시간 알림 ----------
+         페이지가 열려 있는 동안 15초마다 시간을 확인한다.
+         같은 시간의 약은 알림 하나로 묶는다.
+         닫은 알림은 날짜별로 기억해 새로고침해도 다시 뜨지 않는다. */
+      var CLOSED_KEY = 'meditiming.alarmsClosed';
+      var LOOK_BACK_MINUTES = 10;       // 화면을 열기 직전 10분 안의 알림까지 보여 준다
+      var openedAt = new Date();
+      var alarmQueue = [];              // 떠야 할 알림 시간들 ('HH:MM')
+      var shownAlarm = null;            // 지금 떠 있는 알림 { time, preview }
+      var baseTitle = document.title;
+
+      function dateString(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+      function clockString(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+      function medsAt(date, time) {
+        var day = dateString(date), dow = date.getDay();
+        return meds.filter(function (m) {
+          return m.days.indexOf(dow) !== -1 && m.start <= day && (!m.end || day <= m.end) &&
+                 (time ? m.times.indexOf(time) !== -1 : true);
+        });
+      }
+      function timesOn(date) {
+        var seen = {};
+        medsAt(date, null).forEach(function (m) { m.times.forEach(function (t) { seen[t] = true; }); });
+        return Object.keys(seen).sort();
+      }
+
+      /* 닫은 알림 기억: times = 첫 알림을 닫은 시간, reminded = 다시 알림까지 닫은 시간 */
+      function loadAlarmState() {
+        try {
+          var saved = JSON.parse(localStorage.getItem(CLOSED_KEY));
+          if (saved && saved.date === todayString() && Array.isArray(saved.times)) {
+            return { times: saved.times, reminded: Array.isArray(saved.reminded) ? saved.reminded : [] };
+          }
+        } catch (e) {}
+        return { times: [], reminded: [] };
+      }
+      function rememberClosed(time, remindedToo) {
+        var state = loadAlarmState();
+        if (state.times.indexOf(time) === -1) { state.times.push(time); }
+        if (remindedToo && state.reminded.indexOf(time) === -1) { state.reminded.push(time); }
+        try {
+          localStorage.setItem(CLOSED_KEY, JSON.stringify({ date: todayString(), times: state.times, reminded: state.reminded }));
+        } catch (e) {}
+      }
+
+      /* ---------- 놓침 재알림 ----------
+         예정 시각에서 remindAfter분이 지나도 복용 기록이 없으면 본인에게 한 번 더 알린다.
+         첫 알림을 닫았더라도 다시 뜨고, 화면을 늦게 열어도 오늘 놓친 약은 한 번 알려 준다. */
+      var SETTINGS_KEY = 'meditiming.settings';
+      var REMIND_CHOICES = [10, 20, 30, 60];
+      var settings = { remindAfter: 30 };
+      try {
+        var savedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+        if (savedSettings && REMIND_CHOICES.indexOf(savedSettings.remindAfter) !== -1) { settings.remindAfter = savedSettings.remindAfter; }
+      } catch (e) {}
+      var alarmKinds = {};              // 시간별 알림 종류: 'first'(제시간 알림) 또는 'remind'(다시 알림)
+
+      function minutesLate(time, now) { return now.getHours() * 60 + now.getMinutes() - minutesOf(time); }
+
+      function findNextAlarm() {
+        var now = new Date();
+        for (var offset = 0; offset < 8; offset++) {
+          var date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+          var list = timesOn(date);
+          for (var i = 0; i < list.length; i++) {
+            if (offset > 0 || list[i] > clockString(now)) {
+              return { date: date, offset: offset, time: list[i], count: medsAt(date, list[i]).length };
+            }
+          }
+        }
+        return null;
+      }
+      function updateNextAlarm() {
+        var next = findNextAlarm();
+        var text;
+        if (!meds.length) { text = '약을 등록하면 복용 시간에 알려 드려요.'; }
+        else if (!next) { text = '앞으로 7일 동안 예정된 알림이 없어요.'; }
+        else {
+          var dayWord = next.offset === 0 ? '오늘' : next.offset === 1 ? '내일' : DAY_NAMES[next.date.getDay()] + '요일';
+          text = '다음 알림은 ' + dayWord + ' ' + timeLabel(next.time) + ', ' + next.count + '가지';
+        }
+        $('next-alarm-when').textContent = text;
+      }
+
+      function checkAlarms() {
+        var now = new Date();
+        var floor = new Date(openedAt.getTime() - LOOK_BACK_MINUTES * 60000);
+        var floorClock = dateString(floor) === dateString(now) ? clockString(floor) : '00:00';
+        checkGuardian(now);
+        var state = loadAlarmState();
+        alarmKinds = {};
+        alarmQueue = timesOn(now).filter(function (t) {
+          if (t > clockString(now) || !pendingAt(now, t).length) { return false; }   // 이미 모두 먹었다고 기록한 시간은 알리지 않는다
+          if (minutesLate(t, now) >= settings.remindAfter) {
+            if (state.reminded.indexOf(t) !== -1) { return false; }
+            alarmKinds[t] = 'remind';
+            return true;
+          }
+          if (t >= floorClock && state.times.indexOf(t) === -1) { alarmKinds[t] = 'first'; return true; }
+          return false;
+        });
+        if (shownAlarm && !shownAlarm.preview && alarmQueue.indexOf(shownAlarm.time) === -1) { hideAlarm(); }
+        if (!shownAlarm && alarmQueue.length) { showAlarm(alarmQueue[0], new Date(), false); }
+        else if (shownAlarm && !shownAlarm.preview) { showAlarm(shownAlarm.time, new Date(), false); }
+      }
+
+      function showAlarm(time, date, preview) {
+        var list = preview ? medsAt(date, time) : pendingAt(date, time);
+        if (!list.length) { return; }
+        $('alarm-take').hidden = preview;
+        $('alarm-close').textContent = preview ? '미리 보기 닫기' : '알림만 닫기';
+        var remind = !preview && alarmKinds[time] === 'remind';
+        var fresh = !shownAlarm || shownAlarm.time !== time || shownAlarm.preview !== preview || shownAlarm.remind !== remind;
+        shownAlarm = { time: time, preview: preview, remind: remind };
+
+        $('alarm').classList.toggle('is-remind', remind);
+        $('alarm-kind').hidden = !preview && !remind;
+        $('alarm-kind').textContent = preview ? '미리 보기입니다'
+          : '다시 알려 드려요. 예정 시간에서 ' + agoLabel(minutesLate(time, date)).replace(' 전', '') + ' 지났어요.';
+        $('alarm-title').textContent = timeLabel(time) + (remind ? ' 약을 아직 기록하지 않았어요' : ' 약 먹을 시간이에요');
+        $('alarm-advice').hidden = !remind;
+        var ul = $('alarm-meds');
+        ul.textContent = '';
+        list.forEach(function (m) {
+          var li = document.createElement('li');
+          var kind = document.createElement('span');
+          kind.className = 'med-kind' + (m.kind === 'supplement' ? ' is-supplement' : '');
+          kind.textContent = m.kind === 'supplement' ? '영양제' : '약';
+          li.appendChild(kind);
+          li.appendChild(document.createTextNode(m.name + ' ' + m.amount + m.unit));
+          ul.appendChild(li);
+        });
+        var waiting = preview ? 0 : alarmQueue.filter(function (t) { return t !== time; }).length;
+        $('alarm-more').hidden = waiting === 0;
+        $('alarm-more').textContent = waiting ? '이 알림을 닫으면 다른 시간 알림 ' + waiting + '개가 이어서 나옵니다.' : '';
+
+        if (fresh) { $('alarm').hidden = true; void $('alarm').offsetWidth; }  // 새 알림이면 올라오는 움직임을 다시 보여 준다
+        $('alarm').hidden = false;
+        if (!preview) { document.title = (remind ? '아직 기록하지 않은 약이 있어요' : '약 먹을 시간이에요') + ' | ' + baseTitle; }
+      }
+      function hideAlarm() {
+        shownAlarm = null;
+        $('alarm').hidden = true;
+        document.title = baseTitle;
+      }
+      function closeAlarm() {
+        if (shownAlarm && !shownAlarm.preview) { rememberClosed(shownAlarm.time, shownAlarm.remind); }
+        hideAlarm();
+        checkAlarms();
+      }
+      function previewAlarm() {
+        var next = findNextAlarm();
+        if (!next) {
+          $('notice').textContent = meds.length ? '미리 볼 알림이 없어요. 복용 요일과 기간을 확인해 주세요.'
+                                                : '약을 먼저 등록하면 알림을 미리 볼 수 있어요.';
+          return;
+        }
+        $('notice').textContent = '';
+        showAlarm(next.time, next.date, true);
+      }
+      function takeFromAlarm() {
+        if (!shownAlarm || shownAlarm.preview) { return; }
+        var now = new Date(), time = shownAlarm.time;
+        var day = dateString(now);
+        var list = pendingAt(now, time);
+        var found = [], clear = [];
+        list.forEach(function (m) {
+          var f = findDuplicate(day, time, m);
+          if (f) { found.push(f); } else { clear.push(m); }
+        });
+
+        function finish(recorded, keepAlarm) {
+          recorded.forEach(function (m) { take(day, time, m); });
+          if (!keepAlarm) { rememberClosed(time, true); hideAlarm(); }
+          if (recorded.length) { $('notice').textContent = timeLabel(time) + ' 약 ' + recorded.length + '가지를 먹은 것으로 기록했어요.'; }
+          if (!$('view-today').hidden) { renderToday(); }
+          checkAlarms();
+        }
+
+        if (!found.length) { finish(list, false); return; }
+        // 조금 전에 먹은 약이 섞여 있으면 경고하고, 문제없는 약만 먼저 기록한다
+        openWarning(found, {
+          force: function () { finish(list, false); },
+          skip: function () { finish(clear, true); }
+        });
+      }
+      function refreshAlarms() {
+        updateNextAlarm();
+        checkAlarms();
+        // 오늘 화면이 열려 있으면 '예정'이 '시간이 지났어요'로 바뀌도록 다시 그린다 (단추를 누르는 중이면 건드리지 않는다)
+        if (!$('view-today').hidden && !$('today-slots').contains(document.activeElement)) { renderToday(); }
+      }
+
+      /* ---------- 보호자 안심 문자 (미리보기) ----------
+         복용 시간에서 guardian.after분이 지나도 기록이 없으면 보호자에게 보낼 문자를 만든다.
+         실제로 보내지는 않고, 화면에 내용을 보여 주고 '만들어진 문자'에 남긴다.
+         본인이 동의(켜기)해야 만들고, 문자에는 약 이름을 넣지 않는다. */
+      var GUARDIAN_KEY = 'meditiming.guardian';
+      var OUTBOX_KEY = 'meditiming.outbox';
+      var GUARDIAN_CHOICES = [30, 60, 90, 120];
+      var guardian = { name: '', phone: '', enabled: false, after: 60 };
+      var outbox = [];
+      try {
+        var savedGuardian = JSON.parse(localStorage.getItem(GUARDIAN_KEY));
+        if (savedGuardian && typeof savedGuardian === 'object') {
+          guardian.name = String(savedGuardian.name || '');
+          guardian.phone = String(savedGuardian.phone || '');
+          guardian.enabled = savedGuardian.enabled === true;
+          if (GUARDIAN_CHOICES.indexOf(savedGuardian.after) !== -1) { guardian.after = savedGuardian.after; }
+        }
+        var savedOutbox = JSON.parse(localStorage.getItem(OUTBOX_KEY));
+        if (Array.isArray(savedOutbox)) { outbox = savedOutbox; }
+      } catch (e) {}
+
+      function saveOutbox() {
+        outbox = outbox.slice(-30);   // 최근 30건만 남긴다
+        try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox)); } catch (e) {}
+      }
+      function guardianText(time) {
+        return '[MediTiming] ' + timeLabel(time) + ' 약의 복용 기록이 아직 없습니다. 안부를 확인해 주세요.';
+      }
+      function minutesLabel(n) { return n < 60 ? n + '분' : (n / 60 === 1 ? '1시간' : n % 60 === 0 ? (n / 60) + '시간' : Math.floor(n / 60) + '시간 ' + (n % 60) + '분'); }
+
+      function checkGuardian(now) {
+        if (!guardian.enabled || !guardian.phone) { return; }
+        var day = dateString(now), made = false;
+        timesOn(now).forEach(function (t) {
+          if (t > clockString(now) || minutesLate(t, now) < guardian.after || !pendingAt(now, t).length) { return; }
+          if (outbox.some(function (o) { return o.date === day && o.time === t; })) { return; }
+          outbox.push({ date: day, time: t, madeAt: clockString(now), name: guardian.name, phone: guardian.phone,
+                        text: guardianText(t), seen: false });
+          made = true;
+        });
+        if (made) {
+          saveOutbox();
+          if (!$('view-guardian').hidden) { renderOutbox(); }
+        }
+        showSms();
+      }
+
+      function showSms() {
+        var unseen = outbox.filter(function (o) { return !o.seen; });
+        $('sms').hidden = unseen.length === 0;
+        document.body.classList.toggle('has-sms', unseen.length > 0);   // 문자 미리보기를 확인하는 동안에는 아래쪽 알림을 잠시 가린다
+        if (!unseen.length) { return; }
+        var o = unseen[0];
+        $('sms-title').textContent = timeLabel(o.time) + ' 약 기록이 없어 보호자 문자를 만들었어요';
+        $('sms-to').textContent = '받는 사람: ' + o.name + ' ' + o.phone;
+        $('sms-text').textContent = o.text;
+        $('sms-more').hidden = unseen.length < 2;
+        $('sms-more').textContent = unseen.length > 1 ? '확인하면 다른 문자 ' + (unseen.length - 1) + '건이 이어서 나옵니다.' : '';
+      }
+      $('sms-close').addEventListener('click', function () {
+        for (var i = 0; i < outbox.length; i++) { if (!outbox[i].seen) { outbox[i].seen = true; break; } }
+        saveOutbox();
+        showSms();
+      });
+
+      function renderOutbox() {
+        var ul = $('outbox');
+        ul.textContent = '';
+        outbox.slice().reverse().forEach(function (o) {
+          var li = document.createElement('li');
+          addLine(li, 'sms-to', '받는 사람: ' + o.name + ' ' + o.phone);
+          addLine(li, 'bubble', o.text);
+          addLine(li, 'sms-meta', dateLabel(o.date) + ' ' + timeLabel(o.madeAt) + '에 만듦. 실제로 보내지 않았어요.');
+          ul.appendChild(li);
+        });
+        $('outbox-empty').hidden = outbox.length > 0;
+      }
+      function updateGuardianLink() {
+        $('go-guardian').textContent = guardian.enabled ? '보호자 설정 (문자 켜짐)' : '보호자 설정';
+      }
+      function updateGuardianExample() {
+        $('guardian-example').textContent = guardianText('13:00');
+      }
+      function openGuardian() {
+        $('guardian-name').value = guardian.name;
+        $('guardian-phone').value = guardian.phone;
+        $('guardian-after').value = guardian.after;
+        $('guardian-on').checked = guardian.enabled;
+        $('guardian-problems').hidden = true;
+        $('guardian-notice').textContent = '';
+        document.querySelectorAll('#guardian-form [aria-invalid]').forEach(function (el) { el.removeAttribute('aria-invalid'); });
+        updateGuardianExample();
+        renderOutbox();
+        show('guardian');
+      }
+
+      GUARDIAN_CHOICES.forEach(function (n) {
+        var option = document.createElement('option');
+        option.value = n;
+        option.textContent = minutesLabel(n);
+        $('guardian-after').appendChild(option);
+      });
+      $('guardian-sample').addEventListener('click', function () {
+        var sampleGuardian = sampleData().guardian || FALLBACK_SAMPLE.guardian;
+        $('guardian-name').value = sampleName(String(sampleGuardian.name));
+        $('guardian-phone').value = String(sampleGuardian.phone);
+      });
+      $('guardian-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        var name = $('guardian-name').value.trim();
+        var phone = $('guardian-phone').value.trim();
+        var on = $('guardian-on').checked;
+        var digits = phone.replace(/[^0-9]/g, '');
+        var problems = [];
+        $('guardian-name').removeAttribute('aria-invalid');
+        $('guardian-phone').removeAttribute('aria-invalid');
+
+        if (on && !name) { problems.push({ text: '문자를 켜려면 보호자 이름을 적어 주세요.', el: $('guardian-name') }); }
+        if ((on || phone) && (!/^[0-9\-\s]+$/.test(phone) || digits.length < 9 || digits.length > 11)) {
+          problems.push({ text: '전화번호를 숫자 9~11자리로 적어 주세요. 예: 000-0000-0000', el: $('guardian-phone') });
+        }
+
+        var box = $('guardian-problems');
+        box.textContent = '';
+        box.hidden = problems.length === 0;
+        if (problems.length) {
+          var head = document.createElement('strong');
+          head.textContent = '저장하려면 아래 내용을 고쳐 주세요.';
+          var ul = document.createElement('ul');
+          problems.forEach(function (p) {
+            var li = document.createElement('li');
+            li.textContent = p.text;
+            ul.appendChild(li);
+            p.el.setAttribute('aria-invalid', 'true');
+          });
+          box.appendChild(head);
+          box.appendChild(ul);
+          box.focus();
+          $('guardian-notice').textContent = '';
+          return;
+        }
+
+        guardian = { name: name, phone: phone, enabled: on, after: Number($('guardian-after').value) };
+        var stored = true;
+        try { localStorage.setItem(GUARDIAN_KEY, JSON.stringify(guardian)); } catch (e) { stored = false; }
+        $('guardian-notice').textContent = (on
+          ? '저장했어요. 복용 시간에서 ' + minutesLabel(guardian.after) + ' 지나도 기록이 없으면 문자를 만들어 화면에 보여 드려요.'
+          : '저장했어요. 문자 만들기는 꺼져 있어요.') + (stored ? '' : ' 다만 이 브라우저에 저장하지 못했어요.');
+        updateGuardianLink();
+        checkAlarms();
+        renderOutbox();
+      });
+      $('go-guardian').addEventListener('click', openGuardian);
+      updateGuardianLink();
+
+      // 다시 알림 간격 고르기
+      REMIND_CHOICES.forEach(function (n) {
+        var option = document.createElement('option');
+        option.value = n;
+        option.textContent = n + '분 뒤';
+        $('remind-after').appendChild(option);
+      });
+      $('remind-after').value = settings.remindAfter;
+      $('remind-after').addEventListener('change', function () {
+        settings.remindAfter = Number($('remind-after').value);
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+        checkAlarms();
+      });
+
+      $('alarm-take').addEventListener('click', takeFromAlarm);
+      $('alarm-close').addEventListener('click', closeAlarm);
+      $('alarm-preview').addEventListener('click', previewAlarm);
+      setInterval(refreshAlarms, 15000);
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) { refreshAlarms(); } });
+
+      /* ---------- 단추 연결 ---------- */
+      $('go-add').addEventListener('click', function () { cameFrom = 'home'; openForm(null); });
+      $('go-list').addEventListener('click', function () { openList(''); });
+      $('go-today').addEventListener('click', openToday);
+      $('seed').addEventListener('click', seedExamples);
+      $('seed').textContent = '가상 약 ' + sampleData().meds.length + '개 넣어 보기';
+      $('time-add').addEventListener('click', function () {
+        times.push('');
+        renderTimes();
+        var inputs = document.querySelectorAll('#time-list input');
+        inputs[inputs.length - 1].focus();
+      });
+      document.querySelectorAll('#time-presets [data-time]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var at = times.indexOf(b.dataset.time);
+          if (at === -1) { times.push(b.dataset.time); } else { times.splice(at, 1); }
+          renderTimes();
+        });
+      });
+      $('day-all').addEventListener('click', function () { setDays(DAY_ORDER); });
+      $('med-noend').addEventListener('change', syncEnd);
+
+      document.querySelectorAll('[data-go]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var to = b.dataset.go;
+          if (to === 'home') { show('home'); }
+          else if (to === 'add') { cameFrom = 'list'; openForm(null); }
+          else if (to === 'back') { if (cameFrom === 'list') { openList(''); } else { show('home'); } }
+        });
+      });
+
+      /* 아직 만들지 않은 기능 */
+      var notice = $('notice');
+      document.querySelectorAll('.action[data-feature]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          notice.textContent = "'" + b.dataset.feature + "' 기능은 아직 준비 중이에요.";
+        });
+      });
+
+      updateHome();
+
+      /* ---------- 영어 지원 ----------
+         화면 문구는 한국어로 그리고, 영어를 고르면 이 블록이 화면에 나온 문구를 영어로 바꿔 보여 준다.
+         영어 문구는 모두 여기(EN_EXACT, EN_PATTERNS)에 모여 있다. 화면 문구를 고치면 여기도 함께 고친다.
+         사용자가 적은 약 이름과 사진에서 읽은 글자는 번역하지 않는다. */
+      var LANG_KEY = 'meditiming.lang';
+      var lang = 'ko';
+      try { if (localStorage.getItem(LANG_KEY) === 'en') { lang = 'en'; } } catch (e) {}
+
+      var EN_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var EN_MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      var EN_DAYS = { '일': 'Sun', '월': 'Mon', '화': 'Tue', '수': 'Wed', '목': 'Thu', '금': 'Fri', '토': 'Sat' };
+      var EN_DAYS_LONG = { '일': 'Sunday', '월': 'Monday', '화': 'Tuesday', '수': 'Wednesday', '목': 'Thursday', '금': 'Friday', '토': 'Saturday' };
+      var EN_UNITS = { '알': ['tablet', 'tablets'], '포': ['packet', 'packets'], '방울': ['drop', 'drops'], 'mL': ['mL', 'mL'] };
+      var TIME_RE = '(?:오전|오후) \\d{1,2}:\\d{2}';
+
+      function plural(n, one, many) { return n + ' ' + (Number(n) === 1 ? one : many); }
+      function enTimes(s) {
+        return s.replace(/(오전|오후) (\d{1,2}):(\d{2})/g, function (all, half, h, m) { return h + ':' + m + ' ' + (half === '오전' ? 'AM' : 'PM'); });
+      }
+      function enDate(s) {
+        return s.replace(/(\d{4})년 (\d{1,2})월 (\d{1,2})일/g, function (all, y, m, d) { return EN_MONTHS[m - 1] + ' ' + d + ', ' + y; });
+      }
+      function enAmount(n, unit) { var u = EN_UNITS[unit] || [unit, unit]; return n + ' ' + (Number(n) === 1 ? u[0] : u[1]); }
+      function enDuration(s) {
+        var m = s.match(/^(?:(\d+)시간)?\s?(?:(\d+)분)?$/);
+        if (!m || (!m[1] && !m[2])) { return s; }
+        return [m[1] ? m[1] + ' hr' : '', m[2] ? m[2] + ' min' : ''].filter(Boolean).join(' ');
+      }
+      function enAgo(s) { return s === '방금' ? 'just now' : enDuration(s.replace(/ 전$/, '')) + ' ago'; }
+
+      var EN_EXACT = {
+        // 첫 화면
+        '여러 약을 시간 맞춰 챙겨야 하는 분과 그 가족을 위한 복약 관리 서비스': 'Medication tracking for people who take several medicines on a schedule, and for their families',
+        '약 등록하기': 'Add a medicine',
+        '먹는 약과 복용 시간을 등록해요': 'Add your medicines and dose times',
+        '오늘 먹을 약 체크하기': 'Check off today\'s doses',
+        '오늘 먹을 약을 보고 먹은 약을 기록해요': 'See today\'s medicines and record what you took',
+        '약 궁합 확인하기': 'Check combinations',
+        '약과 영양제를 함께 먹어도 되는지 봐요': 'See whether medicines and supplements can be taken together',
+        '내 약 목록 보기': 'My medicines',
+        '복용 기록 보기': 'Dose history',
+        '보호자 설정': 'Caregiver settings',
+        '보호자 설정 (문자 켜짐)': 'Caregiver settings (texts on)',
+        '이 화면을 열어 둔 동안에만 알림이 나옵니다.': 'Reminders appear only while this page is open.',
+        '먹었다는 기록이 없으면': 'If a dose is not recorded,',
+        '다시 알림': 'remind me again',
+        '알림 미리 보기': 'Preview a reminder',
+        '오늘 이렇게 챙겨 드려요': 'How a day looks',
+        '하루 세 번 약을 먹는 날의 모습': 'A day with three doses',
+        '지금 오전 10:20': 'Now 10:20 AM',
+        '오전 6시': '6 AM',
+        '밤 12시': '12 AM',
+        '아침 약 2알': 'Morning medicine, 2 tablets',
+        '점심 약 1알': 'Midday medicine, 1 tablet',
+        '저녁 약 2알, 영양제 1알': 'Evening medicine, 2 tablets; supplement, 1 tablet',
+        '먹었어요': 'Taken',
+        '다음 알림': 'Next reminder',
+        '예정': 'Scheduled',
+        '예시 데이터입니다. 실제 복약 정보가 아닙니다.': 'Sample data. Not real medication information.',
+        'MediTiming은 복약을 돕는 도구입니다. 약에 대한 판단은 의사나 약사와 상담해 주세요.': 'MediTiming is a tool to help you keep track. For decisions about your medicines, talk to a doctor or pharmacist.',
+        '약을 등록하면 복용 시간에 알려 드려요.': 'Add a medicine and you will be reminded at dose time.',
+        '앞으로 7일 동안 예정된 알림이 없어요.': 'No reminders scheduled for the next 7 days.',
+        '미리 볼 알림이 없어요. 복용 요일과 기간을 확인해 주세요.': 'No reminder to preview. Check the days and dates of your medicines.',
+        '약을 먼저 등록하면 알림을 미리 볼 수 있어요.': 'Add a medicine first to preview a reminder.',
+        // 공통
+        '처음으로': 'Home',
+        '취소': 'Cancel',
+        '약': 'Medicine',
+        '영양제': 'Supplement',
+        '오늘': 'Today',
+        '저장하려면 아래 내용을 고쳐 주세요.': 'To save, please fix the following.',
+        // 약 등록
+        '약 고치기': 'Edit medicine',
+        '먹는 약 하나의 이름과 복용 시간을 적어 주세요.': 'Enter the name and dose times of one medicine.',
+        '사진으로 이름 채우기': 'Fill in the name from a photo',
+        '약 봉투나 약 상자의 글자가 잘 보이게 찍어 주세요. 사진은 이 브라우저 밖으로 보내지 않고, 저장하지도 않습니다.': 'Take a photo where the text on the medicine bag or box is clear. The photo is not sent out of this browser and is not saved.',
+        '사진 찍기 또는 고르기': 'Take or choose a photo',
+        '고른 약 사진': 'The medicine photo you chose',
+        '글자 읽는 도구를 불러오는 중이에요. 처음에는 시간이 걸릴 수 있어요.': 'Loading the text reader. The first time can take a while.',
+        '읽은 글자예요. 약 이름을 골라 주세요. 틀리게 읽었을 수 있으니 사진과 꼭 비교해 주세요.': 'Here is the text that was read. Choose the medicine name. It may be misread, so compare it with the photo.',
+        '사진에서 글자를 읽지 못했어요. 사진을 보며 약 이름을 직접 적어 주세요.': 'No text could be read from the photo. Look at the photo and type the name yourself.',
+        '글자 읽는 도구를 쓸 수 없어요. 인터넷 연결을 확인하거나, 사진을 보며 약 이름을 직접 적어 주세요.': 'The text reader is not available. Check your internet connection, or look at the photo and type the name yourself.',
+        '사진 파일을 골라 주세요.': 'Please choose an image file.',
+        '종류': 'Type',
+        '약 이름': 'Medicine name',
+        '예: 가상 약 1': 'e.g. Sample medicine 1',
+        '한 번에 먹는 양': 'Amount per dose',
+        '단위': 'Unit',
+        '알': 'tablet',
+        '포': 'packet',
+        '방울': 'drop',
+        '복용 시간': 'Dose times',
+        '자주 쓰는 시간을 누르거나 직접 추가하세요. 하루에 여러 번이면 모두 넣습니다.': 'Tap a common time or add your own. If you take it several times a day, add them all.',
+        '아침 8시': 'Morning 8:00',
+        '점심 1시': 'Midday 1:00',
+        '저녁 7시': 'Evening 7:00',
+        '자기 전 10시': 'Bedtime 10:00',
+        '직접 추가': 'Add a time',
+        '빼기': 'Remove',
+        '빈 시간': 'empty time',
+        '아직 넣은 시간이 없어요.': 'No times added yet.',
+        '복용 요일': 'Days',
+        '매일': 'Every day',
+        '매일로 맞추기': 'Set to every day',
+        '복용 기간': 'Dates',
+        '시작하는 날': 'Start date',
+        '끝나는 날 없이 계속 복용': 'Ongoing, no end date',
+        '끝나는 날': 'End date',
+        '약 저장하기': 'Save medicine',
+        '고친 내용 저장하기': 'Save changes',
+        '적은 내용은 이 브라우저에만 저장됩니다. 연습할 때는 실제 정보 대신 예시 이름을 써 주세요.': 'What you enter is saved only in this browser. When practicing, use sample names instead of real information.',
+        '약 이름을 적어 주세요.': 'Enter the medicine name.',
+        '한 번에 먹는 양을 0보다 큰 숫자로 적어 주세요.': 'Enter an amount per dose greater than 0.',
+        '복용 시간을 하나 이상 넣어 주세요.': 'Add at least one dose time.',
+        '복용 요일을 하나 이상 골라 주세요.': 'Choose at least one day.',
+        '시작하는 날을 골라 주세요.': 'Choose a start date.',
+        '끝나는 날을 고르거나 "계속 복용"을 선택해 주세요.': 'Choose an end date, or select "Ongoing".',
+        '끝나는 날이 시작하는 날보다 빠릅니다. 날짜를 다시 골라 주세요.': 'The end date is before the start date. Choose the dates again.',
+        // 내 약 목록
+        '내 약 목록': 'My medicines',
+        '아직 등록한 약이 없어요.': 'No medicines added yet.',
+        '먹는 약을 등록하면 여기에 모아 보여 드립니다.': 'Medicines you add are listed here.',
+        '약 하나 더 등록하기': 'Add another medicine',
+        '용량': 'Amount',
+        '시간': 'Times',
+        '요일': 'Days',
+        '기간': 'Dates',
+        '고치기': 'Edit',
+        '삭제': 'Delete',
+        '삭제하기': 'Delete',
+        '그대로 두기': 'Keep',
+        // 오늘 먹을 약
+        '오늘 먹을 약': 'Today\'s medicines',
+        '오늘 먹을 약이 없어요.': 'No medicines to take today.',
+        '약을 등록하면 복용 시간순으로 여기에 보여 드립니다.': 'Medicines you add are shown here in order of dose time.',
+        '! 시간이 지났어요. 아직 기록이 없어요': '! Past due. No record yet',
+        '한 번 더 기록': 'Record again',
+        // 중복 복용 경고
+        '중복 복용 경고': 'Double-dose warning',
+        '이 약은 이미 먹었다고 기록했어요': 'This medicine is already recorded as taken',
+        '같은 약을 조금 전에 먹었다고 기록했어요': 'The same medicine was recorded as taken a short while ago',
+        '한 번 더 먹기 전에 확인해 주세요. 헷갈리면 의사나 약사에게 물어보세요.': 'Please check before taking it again. If you are unsure, ask a doctor or pharmacist.',
+        '기록하지 않기': 'Do not record',
+        '그래도 기록하기': 'Record anyway',
+        // 복용 기록
+        '복용 기록': 'Dose history',
+        '날짜를 누르면 그날 먹은 약과 놓친 약을 보여 드립니다.': 'Tap a date to see what was taken and what was missed that day.',
+        '이전 달': 'Previous',
+        '다음 달': 'Next',
+        '모두 먹은 날': 'All doses taken',
+        '놓친 약이 있는 날': 'A dose was missed',
+        '! 놓쳤어요. 복용 기록이 없어요': '! Missed. No record',
+        '이날 먹을 약이 없어요.': 'No medicines scheduled this day.',
+        '이날은 먹을 약도, 복용 기록도 없어요.': 'No medicines scheduled and no records this day.',
+        // 궁합
+        '약 궁합 확인': 'Combination check',
+        '등록한 약과 영양제를 둘씩 짝지어, 함께 먹을 때 주의할 조합이 있는지 봅니다.': 'Pairs up the medicines and supplements you added and looks for combinations that need care.',
+        '화면 시연용 예시 정보입니다.': 'This is sample information for demonstration.',
+        '검증된 의약품 데이터가 아니므로 실제 복약 판단에 쓰지 마세요. 약에 대한 판단은 의사나 약사와 상담해 주세요.': 'It is not verified drug data, so do not use it for real medication decisions. For decisions about your medicines, talk to a doctor or pharmacist.',
+        '확인할 조합이 아직 없어요.': 'Nothing to check yet.',
+        '약이나 영양제를 두 가지 이상 등록하면 조합을 확인해 드립니다.': 'Add two or more medicines or supplements to check their combinations.',
+        '예시 목록에서 찾은 주의 조합이 없어요': 'No combinations needing care were found in the sample list',
+        '정보가 없는 조합': 'Combinations with no information',
+        '정보가 없다는 것은 함께 먹어도 안전하다는 뜻이 아닙니다.': 'No information does not mean it is safe to take them together.',
+        '정보가 없는 조합 모두 보기': 'Show all combinations with no information',
+        '예시 목록 (검증 전)': 'sample list (not verified)',
+        '함께 복용 금지': 'Do not take together',
+        '시간 간격 두기': 'Space them apart',
+        '전문가와 상담': 'Ask a professional',
+        '보통 시간 간격을 두고 먹도록 안내되는 조합이에요. 간격을 얼마나 둘지는 약사에게 확인하세요.': 'People are usually advised to space these apart. Ask a pharmacist how long to leave between them.',
+        '함께 먹으면 부작용 위험이 커질 수 있어, 같이 먹지 않도록 안내되는 조합이에요.': 'Taking these together can raise the risk of side effects, so people are advised not to combine them.',
+        '지금 함께 먹고 있다면 임의로 끊지 말고, 바로 의사나 약사와 상담하세요.': 'If you are taking both now, do not stop on your own. Talk to a doctor or pharmacist right away.',
+        '칼슘이 철분의 흡수를 줄일 수 있다고 알려져 있어요.': 'Calcium is known to be able to reduce the absorption of iron.',
+        '철분이 갑상선 호르몬제의 흡수를 줄일 수 있다고 알려져 있어요.': 'Iron is known to be able to reduce the absorption of thyroid hormone medicine.',
+        '칼슘이 갑상선 호르몬제의 흡수를 줄일 수 있다고 알려져 있어요.': 'Calcium is known to be able to reduce the absorption of thyroid hormone medicine.',
+        '칼슘이 일부 항생제의 흡수를 줄일 수 있다고 알려져 있어요.': 'Calcium is known to be able to reduce the absorption of some antibiotics.',
+        '철분이 일부 항생제의 흡수를 줄일 수 있다고 알려져 있어요.': 'Iron is known to be able to reduce the absorption of some antibiotics.',
+        '마그네슘이 일부 항생제의 흡수를 줄일 수 있다고 알려져 있어요.': 'Magnesium is known to be able to reduce the absorption of some antibiotics.',
+        '비타민 K는 와파린의 효과에 영향을 줄 수 있다고 알려져 있어요.': 'Vitamin K is known to be able to affect how warfarin works.',
+        '비타민 K가 든 영양제를 새로 먹거나 끊기 전에 의사나 약사와 상담하세요.': 'Talk to a doctor or pharmacist before starting or stopping a supplement that contains vitamin K.',
+        '출혈과 관련해 주의가 필요할 수 있다고 알려진 조합이에요.': 'This combination is known to possibly need care in relation to bleeding.',
+        '함께 먹어도 되는지 의사나 약사와 상담하세요.': 'Ask a doctor or pharmacist whether you can take them together.',
+        '철분': 'iron', '칼슘': 'calcium', '마그네슘': 'magnesium', '갑상선 호르몬제': 'thyroid hormone medicine',
+        '와파린': 'warfarin', '비타민 K': 'vitamin K', '오메가3': 'omega-3', '은행잎': 'ginkgo',
+        '세인트존스워트': 'St John\'s wort', '항우울제': 'antidepressants', '일부 항생제(독시사이클린 등)': 'some antibiotics (doxycycline and others)',
+        // 알림
+        '미리 보기입니다': 'This is a preview',
+        '미리 보기 닫기': 'Close preview',
+        '알림만 닫기': 'Just close',
+        '놓친 약을 어떻게 할지는 약마다 달라요. 헷갈리면 의사나 약사에게 물어보세요.': 'What to do about a missed dose differs by medicine. If you are unsure, ask a doctor or pharmacist.',
+        '약 먹을 시간이에요': 'Time for your medicine',
+        '아직 기록하지 않은 약이 있어요': 'A dose is not recorded yet',
+        // 보호자
+        '약을 오래 기록하지 않으면 보호자에게 알려 줄 문자를 만듭니다.': 'Drafts a text for a caregiver when a dose goes unrecorded for a long time.',
+        '실제 문자는 보내지 않습니다.': 'No real text is sent.',
+        '보낼 문자의 내용을 화면에 미리 보여 주기만 합니다. 연습할 때는 실제 이름과 전화번호 대신 예시를 써 주세요.': 'The text is only shown on screen as a preview. When practicing, use a sample name and number instead of real ones.',
+        '보호자 이름': 'Caregiver name',
+        '예: 가상 보호자 1': 'e.g. Sample caregiver 1',
+        '보호자 전화번호': 'Caregiver phone number',
+        '예: 000-0000-0000': 'e.g. 000-0000-0000',
+        '예시로 채우기': 'Fill with a sample',
+        '문자를 만드는 때': 'When to draft the text',
+        '복용 시간에서': 'When there is no record',
+        '지나도 기록이 없을 때': 'after the dose time',
+        '약을 놓쳤을 때 이 보호자에게 안내 문자를 보내는 데 동의하고, 문자 만들기를 켭니다. 언제든 다시 끌 수 있습니다.': 'I agree to a text being sent to this caregiver when a dose is missed, and turn texts on. I can turn this off at any time.',
+        '보낼 문자 내용': 'Text that would be sent',
+        '다른 사람이 볼 수 있어 약 이름은 넣지 않습니다.': 'Medicine names are left out because other people may see the text.',
+        '보호자 설정 저장하기': 'Save caregiver settings',
+        '만들어진 문자': 'Drafted texts',
+        '아직 만들어진 문자가 없어요.': 'No texts drafted yet.',
+        '문자 미리 보기, 실제로 보내지 않아요': 'Text preview, not actually sent',
+        '확인했어요': 'Got it',
+        '문자를 켜려면 보호자 이름을 적어 주세요.': 'To turn texts on, enter the caregiver\'s name.',
+        '전화번호를 숫자 9~11자리로 적어 주세요. 예: 000-0000-0000': 'Enter a phone number with 9 to 11 digits. e.g. 000-0000-0000',
+        '저장했어요. 문자 만들기는 꺼져 있어요.': 'Saved. Texts are turned off.'
+      };
+
+      var EN_SUFFIXES = [
+        [' 다만 이 브라우저에 저장하지 못해, 창을 닫으면 사라집니다.', ' However, it could not be saved in this browser and will be lost when you close the window.'],
+        [' 다만 이 브라우저에 저장하지 못했어요.', ' However, it could not be saved in this browser.']
+      ];
+
+      var EN_PATTERNS = [
+        [/^가상 약 (\d+)개 넣어 보기$/, function (m) { return 'Add ' + plural(m[1], 'sample medicine', 'sample medicines'); }],
+        [/^가상 약 (\d+)개를 넣었어요\. 실제 복약 정보가 아닙니다\.$/, function (m) {
+          return 'Added ' + plural(m[1], 'sample medicine', 'sample medicines') + '. Not real medication information.'; }],
+        [/^내 약 목록 보기 \((\d+)개\)$/, function (m) { return 'My medicines (' + m[1] + ')'; }],
+        [/^복용 시간 (\d+)$/, function (m) { return 'Dose time ' + m[1]; }],
+        [/^(.+) 빼기$/, function (m) { return 'Remove ' + toEnglish(m[1]); }],
+        [/^'(.+)' 내용을 고쳤어요\.$/, function (m) { return "Updated '" + m[1] + "'."; }],
+        [/^'(.+)' 저장했어요\.$/, function (m) { return "Saved '" + m[1] + "'."; }],
+        [/^'(.+)'은\(는\) 이미 등록한 약과 주의가 필요한 조합이 (\d+)개 있어요\.$/, function (m) {
+          return "'" + m[1] + "' has " + plural(m[2], 'combination that needs', 'combinations that need') + ' care with medicines you already added.'; }],
+        [/^'(.+)'을\(를\) 약 이름 칸에 넣었어요\. 사진과 같은지 확인하고 틀린 글자는 고쳐 주세요\.$/, function (m) {
+          return "Put '" + m[1] + "' in the name field. Compare it with the photo and fix any wrong letters."; }],
+        [/^사진의 글자를 읽는 중이에요\. (\d+)%$/, function (m) { return 'Reading the text in the photo. ' + m[1] + '%'; }],
+        [/^한 번에 ([\d.]+)(알|포|mL|방울)$/, function (m) { return enAmount(m[1], m[2]) + ' per dose'; }],
+        [/^'(.+)' 약을 목록에서 삭제할까요\?$/, function (m) { return "Delete '" + m[1] + "' from your list?"; }],
+        [/^'(.+)' 삭제했어요\.$/, function (m) { return "Deleted '" + m[1] + "'."; }],
+        [/^이미 먹었다고 기록한 약이 (\d+)가지 있어요$/, function (m) { return m[1] + ' medicines are already recorded as taken'; }],
+        [new RegExp('^마지막 복용 기록: 오늘 (' + TIME_RE + ') \\((.+?)\\)(?:, (' + TIME_RE + ') 회차)?$'), function (m) {
+          return 'Last record: today ' + enTimes(m[1]) + ' (' + enAgo(m[2]) + ')' + (m[3] ? ', for the ' + enTimes(m[3]) + ' dose' : ''); }],
+        [/^✓ (.+)에 먹었어요(?: \((\d+)번 기록\))?$/, function (m) {
+          return '✓ Taken at ' + enTimes(m[1]) + (m[2] ? ' (recorded ' + m[2] + ' times)' : ''); }],
+        [new RegExp('^(.+) (' + TIME_RE + ') 한 번 더 기록$'), function (m) { return m[1] + ', ' + enTimes(m[2]) + ': record again'; }],
+        [new RegExp('^(.+) (' + TIME_RE + ') 먹었어요$'), function (m) { return m[1] + ', ' + enTimes(m[2]) + ': mark as taken'; }],
+        [new RegExp('^(.+) (' + TIME_RE + ') 복용 기록 취소$'), function (m) { return m[1] + ', ' + enTimes(m[2]) + ': undo record'; }],
+        [/^(\d{1,2})월 (\d{1,2})일 ([일월화수목금토])요일( \(오늘\)|, 오늘)?(, 모두 먹은 날|, 놓친 약이 있는 날)?$/, function (m) {
+          return EN_DAYS_LONG[m[3]] + ', ' + EN_MONTHS[m[1] - 1] + ' ' + m[2] +
+                 (m[4] ? (m[4].charAt(0) === ',' ? ', today' : ' (today)') : '') +
+                 (m[5] ? ', ' + toEnglish(m[5].slice(2)).toLowerCase() : ''); }],
+        [/^오늘 약 (\d+)번을 모두 먹었어요\.$/, function (m) { return 'All ' + plural(m[1], 'dose', 'doses') + ' taken today.'; }],
+        [/^오늘 (\d+)번 중 (\d+)번 먹었어요\.$/, function (m) { return m[2] + ' of ' + plural(m[1], 'dose', 'doses') + ' taken today.'; }],
+        [/^예시 목록이 알아보는 이름: (.+)\. 약 이름에 이 낱말이 들어 있어야 조합을 찾습니다\.$/, function (m) {
+          return 'Names the sample list recognizes: ' + m[1].split(', ').map(toEnglish).join(', ') +
+                 '. A combination is found only when a medicine name contains one of these words (in Korean, or in English for some).'; }],
+        [/^주의가 필요한 조합 (\d+)개$/, function (m) { return plural(m[1], 'combination needs care', 'combinations need care'); }],
+        [/^지금은 두 가지 모두 (.+)에 먹도록 등록되어 있어요\.$/, function (m) { return 'Both are currently scheduled at ' + enTimes(m[1]) + '.'; }],
+        [/^출처: (.+)$/, function (m) { return 'Source: ' + toEnglish(m[1]); }],
+        [/^나머지 조합 (\d+)개는 예시 목록에 정보가 없어요\.$/, function (m) {
+          return 'The sample list has no information on the other ' + plural(m[1], 'combination', 'combinations') + '.'; }],
+        [/^(\d{4})년 (\d{1,2})월$/, function (m) { return EN_MONTHS_LONG[m[2] - 1] + ' ' + m[1]; }],
+        [/^먹을 약 (\d+)번이 예정되어 있어요\.$/, function (m) { return plural(m[1], 'dose', 'doses') + ' scheduled.'; }],
+        [/^(\d+)번 중 (\d+)번 먹었어요\.(?: 놓친 약 (\d+)번\.)?$/, function (m) {
+          return m[2] + ' of ' + plural(m[1], 'dose', 'doses') + ' taken.' + (m[3] ? ' ' + m[3] + ' missed.' : ''); }],
+        [new RegExp('^다음 알림은 (오늘|내일|[일월화수목금토]요일) (' + TIME_RE + '), (\\d+)가지$'), function (m) {
+          var day = m[1] === '오늘' ? 'today' : m[1] === '내일' ? 'tomorrow' : EN_DAYS_LONG[m[1].charAt(0)];
+          return 'Next reminder: ' + day + ' ' + enTimes(m[2]) + ', ' + plural(m[3], 'item', 'items'); }],
+        [/^다시 알려 드려요\. 예정 시간에서 (.+) 지났어요\.$/, function (m) {
+          return 'Reminding you again. ' + enDuration(m[1]) + ' past the scheduled time.'; }],
+        [new RegExp('^(' + TIME_RE + ') 약을 아직 기록하지 않았어요$'), function (m) { return 'The ' + enTimes(m[1]) + ' dose is not recorded yet'; }],
+        [new RegExp('^(' + TIME_RE + ') 약 먹을 시간이에요$'), function (m) { return 'Time for your ' + enTimes(m[1]) + ' medicine'; }],
+        [/^이 알림을 닫으면 다른 시간 알림 (\d+)개가 이어서 나옵니다\.$/, function (m) {
+          return 'Closing this shows ' + plural(m[1], 'more reminder', 'more reminders') + '.'; }],
+        [/^(.+) \| MediTiming$/, function (m) { return toEnglish(m[1]) + ' | MediTiming'; }],
+        [new RegExp('^(' + TIME_RE + ') 약 (\\d+)가지를 먹은 것으로 기록했어요\\.$'), function (m) {
+          return 'Recorded ' + plural(m[2], 'item', 'items') + ' for ' + enTimes(m[1]) + ' as taken.'; }],
+        [new RegExp('^\\[MediTiming\\] (' + TIME_RE + ') 약의 복용 기록이 아직 없습니다\\. 안부를 확인해 주세요\\.$'), function (m) {
+          return '[MediTiming] There is no record yet for the ' + enTimes(m[1]) + ' medicine. Please check in.'; }],
+        [new RegExp('^(' + TIME_RE + ') 약 기록이 없어 보호자 문자를 만들었어요$'), function (m) {
+          return 'No record for the ' + enTimes(m[1]) + ' dose, so a caregiver text was drafted'; }],
+        [/^받는 사람: (.+)$/, function (m) { return 'To: ' + m[1]; }],
+        [/^확인하면 다른 문자 (\d+)건이 이어서 나옵니다\.$/, function (m) { return 'Confirming shows ' + plural(m[1], 'more text', 'more texts') + '.'; }],
+        [new RegExp('^(\\d{4}년 \\d{1,2}월 \\d{1,2}일) (' + TIME_RE + ')에 만듦\\. 실제로 보내지 않았어요\\.$'), function (m) {
+          return 'Drafted ' + enDate(m[1]) + ', ' + enTimes(m[2]) + '. Not actually sent.'; }],
+        [/^저장했어요\. 복용 시간에서 (.+) 지나도 기록이 없으면 문자를 만들어 화면에 보여 드려요\.$/, function (m) {
+          return 'Saved. If there is no record ' + enDuration(m[1]) + ' after a dose time, a text is drafted and shown on screen.'; }],
+        [/^(\d+)분 뒤$/, function (m) { return 'after ' + m[1] + ' min'; }],
+        [/^(\d{4}년 \d{1,2}월 \d{1,2}일)부터 계속$/, function (m) { return 'From ' + enDate(m[1]) + ', ongoing'; }],
+        [/^(\d{4}년 \d{1,2}월 \d{1,2}일)부터 (\d{4}년 \d{1,2}월 \d{1,2}일)까지$/, function (m) { return enDate(m[1]) + ' to ' + enDate(m[2]); }],
+        [new RegExp('^' + TIME_RE + '(?:, ' + TIME_RE + ')*$'), function (m) { return enTimes(m[0]); }],
+        [/^[일월화수목금토](?:, [일월화수목금토])*$/, function (m) { return m[0].split(', ').map(function (d) { return EN_DAYS[d]; }).join(', '); }],
+        [/^(?:\d+시간)(?: \d+분)?$|^\d+분$/, function (m) { return enDuration(m[0]); }],
+        [/^(.+) ([\d.]+)(알|포|mL|방울)$/, function (m) { return m[1] + ', ' + enAmount(m[2], m[3]); }]
+      ];
+
+      var HANGUL = /[가-힣]/;
+      function toEnglish(text) {
+        var core = text.trim();
+        if (!core || !HANGUL.test(core)) { return text; }
+        var lead = text.slice(0, text.indexOf(core)), tail = text.slice(text.indexOf(core) + core.length);
+        var out = null, extra = '';
+        EN_SUFFIXES.forEach(function (s) {
+          if (core.length > s[0].length && core.slice(-s[0].length) === s[0]) { core = core.slice(0, -s[0].length); extra = s[1]; }
+        });
+        if (Object.prototype.hasOwnProperty.call(EN_EXACT, core)) { out = EN_EXACT[core]; }
+        for (var i = 0; out === null && i < EN_PATTERNS.length; i++) {
+          var m = core.match(EN_PATTERNS[i][0]);
+          if (m) { out = EN_PATTERNS[i][1](m); }
+        }
+        return out === null ? text : lead + out + extra + tail;
+      }
+
+      /* 화면에 나온 글자와 속성을 바꾸고, 원래 한국어를 기억해 두었다가 되돌린다 */
+      var KEEP_AS_IS = '.med-name, .combo-pair, #unknown-list, #photo-names, #lang-toggle, script, style';
+      var TRANSLATED_ATTRS = ['placeholder', 'aria-label', 'alt'];
+      var textMemory = new WeakMap();   // 글자 노드 → { ko, en }
+      var attrMemory = new WeakMap();   // 요소 → { 속성: { ko, en } }
+
+      function translateText(node) {
+        var parent = node.parentElement;
+        if (!parent || parent.closest(KEEP_AS_IS)) { return; }
+        var memo = textMemory.get(node);
+        if (memo && memo.en === node.nodeValue) { return; }   // 이미 바꾼 글자
+        var ko = node.nodeValue, en = toEnglish(ko);
+        if (en !== ko) { textMemory.set(node, { ko: ko, en: en }); node.nodeValue = en; }
+      }
+      function translateAttrs(el) {
+        if (el.closest(KEEP_AS_IS)) { return; }
+        TRANSLATED_ATTRS.forEach(function (name) {
+          var value = el.getAttribute(name);
+          if (!value) { return; }
+          var memo = attrMemory.get(el) || {};
+          if (memo[name] && memo[name].en === value) { return; }
+          var en = toEnglish(value);
+          if (en !== value) { memo[name] = { ko: value, en: en }; attrMemory.set(el, memo); el.setAttribute(name, en); }
+        });
+      }
+      function eachNode(root, onText, onElement) {
+        if (root.nodeType === 3) { onText(root); return; }
+        if (root.nodeType !== 1) { return; }
+        onElement(root);
+        var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+        var node;
+        while ((node = walker.nextNode())) { if (node.nodeType === 3) { onText(node); } else { onElement(node); } }
+      }
+      function translateTree(root) { eachNode(root, translateText, translateAttrs); }
+      function restoreTree(root) {
+        eachNode(root, function (node) {
+          var memo = textMemory.get(node);
+          if (memo && memo.en === node.nodeValue) { node.nodeValue = memo.ko; }
+          textMemory.delete(node);
+        }, function (el) {
+          var memo = attrMemory.get(el);
+          if (!memo) { return; }
+          Object.keys(memo).forEach(function (name) { if (el.getAttribute(name) === memo[name].en) { el.setAttribute(name, memo[name].ko); } });
+          attrMemory.delete(el);
+        });
+      }
+
+      // 화면이 바뀔 때마다(알림이 뜨거나 목록을 다시 그릴 때) 새로 나온 한국어 문구를 영어로 바꾼다
+      var translator = new MutationObserver(function (changes) {
+        if (lang !== 'en') { return; }
+        changes.forEach(function (change) {
+          if (change.type === 'characterData') { translateText(change.target); }
+          else if (change.type === 'attributes') { translateAttrs(change.target); }
+          else { change.addedNodes.forEach(translateTree); }
+        });
+      });
+      translator.observe(document.documentElement, {
+        subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: TRANSLATED_ATTRS
+      });
+
+      function applyLanguage() {
+        document.documentElement.lang = lang;
+        $('lang-toggle').textContent = lang === 'en' ? '한국어' : 'English';
+        $('lang-toggle').setAttribute('aria-label', lang === 'en' ? '한국어로 보기' : 'Switch to English');
+        $('lang-toggle').setAttribute('lang', lang === 'en' ? 'ko' : 'en');
+        if (lang === 'en') { translateTree(document.documentElement); } else { restoreTree(document.documentElement); }
+      }
+      $('lang-toggle').addEventListener('click', function () {
+        lang = lang === 'en' ? 'ko' : 'en';
+        try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+        applyLanguage();
+      });
+      applyLanguage();
+    })();
+  </script>
+</body>
+</html>

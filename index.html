@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blog</title>
+    <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 왼쪽: Blog 제목 리스트 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Blog 목록</h2>
+                <button class="btn-new">새 Blog 쓰기</button>
+            </div>
+            <ul class="blog-list">
+                <li class="active" id="0">
+									<span class="blog-title">오늘의 공부 기록</span>
+									<span class="date">2024-06-01 12:00:00
+								</li>
+            </ul>
+        </aside>
+
+        <!-- 오른쪽: Blog 입력 및 보기 -->
+        <main class="content">
+            <section class="editor-section">
+                <input type="text" class="input-title" placeholder="제목을 입력하세요..." value="오늘의 공부 기록">
+                <textarea class="input-content" placeholder="내용을 입력하세요...">오늘은 HTML과 CSS를 사용하여 Blog장 앱의 레이아웃을 잡았다. Flexbox를 활용하니 좌우 배치가 간편하다.</textarea>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-edit">수정</button>
+                    <button class="btn btn-delete">삭제</button>
+                    <button class="btn btn-save">저장</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+</body>
+<script>
+	/**** 테스트 데이터는 아래와 같다.
+	//주석을 잘 읽고 코드를 완성하시오.
+	***/
+	const initialBlogs = [
+		{
+			title: "오늘의 공부 기록",
+			content: "오늘은 HTML과 CSS를 사용하여 Blog장 앱의 레이아웃을 잡았다. Flexbox를 활용하니 좌우 배치가 간편하다.",
+			date: "2024-06-01 12:00:00"
+		},
+		{
+			title: "맛있는 점심 식사",
+			content: "오늘은 친구들과 함께 맛있는 점심을 먹었다. 파스타와 샐러드가 정말 맛있었다!",
+			date: "2024-06-02 12:30:00"
+		},
+		{
+			title: "주말 여행 계획",
+			content: "이번 주말에는 가족과 함께 근처 산으로 여행을 갈 계획이다. 날씨가 좋았으면 좋겠다.",
+			date: "2024-06-01 13:00:00"
+		}
+	];
+	//새로고침해도 데이터가 유지되도록 하는 함수
+	const saved = localStorage.getItem('blogs');
+	const blogs = saved ? JSON.parse(saved) : initialBlogs;
+	function saveBlogs() {
+    localStorage.setItem('blogs', JSON.stringify(blogs));
+}
+
+	// blogs 배열을 date기준으로 내림차순해서 정해주는 함수는 다음과 같다.
+	function sortBlogsByDate(blogs) {
+		return blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+	}
+
+	// 제목 리스트를 선택했을때 active 클래스가 추가되고, 다른 제목에서는 active 클래스가 제거되는 함수는 다음과 같다.
+	function setActiveBlog(li) {
+		const blogListItems = document.querySelectorAll('.blog-list li');
+		blogListItems.forEach((item, i) => {
+				item.classList.remove('active');
+		});
+		li.classList.add('active');
+	}
+	
+	//테스트를 해보자.
+	const sortedBlogs = sortBlogsByDate(blogs);
+	console.log(sortedBlogs);
+
+	/***1. sortedBlogs배열을 이용해서 좌측의 Blog 제목 리스트를 업데이트하는 함수를 작성해보자.***/
+	function updateBlogList(sortedBlogs) {
+		const blogListElement = document.querySelector('.blog-list');
+		blogListElement.innerHTML = ''; // 기존 리스트 초기화
+		
+		sortedBlogs.forEach((blog, index) => {// sortedBlogs.forEach 함수를 이용한다.
+			console.log(blog);
+			const li = document.createElement('li');
+			li.setAttribute('id', index);// 각 li에 id를 setAttirbute로 설정한다.
+			li.innerHTML = '<span class="blog-title">' + blog.title + '</span><span class="date">' + blog.date + '</span>';
+			blogListElement.appendChild(li);
+		}) 	
+	}
+
+	updateBlogList(sortedBlogs);
+
+	/***2. Blog 제목 리스트에서 각 제목을 클릭했을 때 해당 Blog의 제목과 내용을 오른쪽 입력창에 보여주는 함수를 작성해보자.
+
+	2.1 클릭 이벤트 리스너를 추가하여, 클릭된 제목의 id를 가져오고, 해당 id에 맞는 Blog 데이터를 찾아서 오른쪽 입력창에 표시하는 함수를 작성해보자.**/
+	document.querySelector('.blog-list').addEventListener('click', function(event){
+		const clickedId = event.target.closest('li').getAttribute('id');
+		//id에 해당하는 블로그를 찾차서 displayBlogContent 함수를 이용해서 오른쪽 입력창에 표시한다.
+		const blog = sortBlogsByDate(blogs)[clickedId];
+    	displayBlogContent(blog);	
+		// 클릭된 제목에 active 클래스 추가
+		setActiveBlog(event.target.closest('li'));
+	});
+
+	/**2.2 displayBlogContent 함수는 클릭된 Blog의 제목과 내용을 오른쪽 입력창에 표시하는 역할을 한다.**/
+	function displayBlogContent(blog) {
+		const titleInput = document.querySelector('.input-title');// const titleInput ;
+    	const contentTextarea = document.querySelector('.input-content');// const contentTextarea ;
+    	titleInput.value = blog.title;// titleInput.value ;
+    	contentTextarea.value = blog.content;// contentTextarea.value ;
+	}
+
+	/**3. 새 Blog 쓰기 버튼을 클릭했을 때 입력창이 초기화되고, 새로운 Blog를 작성할 수 있도록 하는 함수를 작성해보자.**/
+	document.querySelector('.btn-new').addEventListener('click', function() {
+		clearInputFields();
+	});
+
+	/***3.1 입력창 초기화 **/
+	function clearInputFields() {
+		const titleInput = document.querySelector('.input-title');
+		const contentTextarea = document.querySelector('.input-content');
+		titleInput.value = '';
+		contentTextarea.value = '';
+	}
+
+	/**3.2 새 Blog를 작성한 후 저장 버튼을 클릭했을 때, 입력된 제목과 내용을 blogs 배열에 추가하는 함수를 작성해보자.**/
+	document.querySelector('.btn-save').addEventListener('click', function() {
+		const titleInput = document.querySelector('.input-title');
+		const contentTextarea = document.querySelector('.input-content');
+		if(titleInput.value.trim() !== '' && contentTextarea.value.trim() !== '') {
+			blogs.push({// 새로운 Blog 객체를 생성하여 blogs 배열에 추가한다.
+            title: titleInput.value,
+            content: contentTextarea.value,
+            date: new Date().toISOString().slice(0, 19).replace('T', ' ')// date는 현재 날짜와 시간으로 설정한다.
+			// date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        });
+			saveBlogs();                          // ← 추가
+        	updateBlogList(sortBlogsByDate(blogs));
+			clearInputFields(); // 입력창 초기화
+		}
+		
+	});
+
+	/**4. 삭제 버튼 선택하면 해당 Blog가 blogs 배열에서 삭제되고, 제목 리스트와 입력창이 업데이트되는 함수를 작성해보자.**/
+	document.querySelector('.btn-delete').addEventListener('click', function() {
+		const activeBlogElement = document.querySelector('.blog-list li.active');
+		if (activeBlogElement) {
+			const activeBlogId = activeBlogElement.getAttribute('id');
+			// blogs 배열에서 해당 Blog 삭제
+			const target = sortBlogsByDate(blogs)[activeBlogId];
+			const index = blogs.indexOf(target);
+			if (index !== -1) {
+   			blogs.splice(index, 1);//sortedBlogs 배열에서 해당 Blog삭제
+	}
+			saveBlogs();
+			updateBlogList(sortBlogsByDate(blogs)); // 제목 리스트 업데이트
+			clearInputFields(); // 입력창 초기화
+		}
+	});
+
+	/**5. 수정 버튼을 클릭했을 때, 입력창에서 제목과 내용을 수정할 수 있도록 하고, 저장 버튼을 클릭하면 해당 Blog가 업데이트되는 함수를 작성해보자.**/
+	document.querySelector('.btn-edit').addEventListener('click', function() {
+		const activeBlogElement = document.querySelector('.blog-list li.active');
+		if (activeBlogElement) {
+			const activeBlogId = activeBlogElement.getAttribute('id');
+			const titleInput = document.querySelector('.input-title'); //const contentTextarea ;
+        	const contentTextarea = document.querySelector('.input-content');
+        if(titleInput.value.trim() !== '' && contentTextarea.value.trim() !== '') {
+            // blogs 배열에서 해당 Blog 업데이트
+            const target = sortBlogsByDate(blogs)[activeBlogId];
+            const index = blogs.indexOf(target);
+            blogs[index].title = titleInput.value;
+            blogs[index].content = contentTextarea.value;
+
+            saveBlogs();
+            updateBlogList(sortBlogsByDate(blogs));//const titleInput ;
+			 // 제목 리스트 업데이트
+			clearInputFields(); // 입력창 초기화
+        }}});
+</script>
+</html>

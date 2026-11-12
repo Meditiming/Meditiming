@@ -1,0 +1,140 @@
+/* 기본 초기화 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background-color: #f5f7f9;
+    color: #333;
+    height: 100vh;
+}
+
+/* 전체 레이아웃 구성 */
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* 사이드바 스타일 */
+.sidebar {
+    width: 300px;
+    background-color: #fff;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.btn-new {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.blog-list {
+    list-style: none;
+    overflow-y: auto;
+}
+
+.blog-list li {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f9f9f9;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+.blog-list li .date {
+    font-size: 14px;
+    color: #888;
+}
+
+.blog-list li:hover {
+    background-color: #f0f4f8;
+}
+
+.blog-list li.active {
+    background-color: #e1ecf8;
+    color: #4a90e2;
+    font-weight: bold;
+}
+
+/* 본문 영역 스타일 */
+.content {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.editor-section {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-title {
+    font-size: 24px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+}
+
+.input-content {
+    flex: 1;
+    min-height: 400px;
+    padding: 15px;
+    font-size: 16px;
+    line-height: 1.6;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+    outline: none;
+}
+
+/* 버튼 스타일 */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-edit {
+    background-color: #f0ad4e;
+    color: white;
+}
+
+.btn-delete {
+    background-color: #d9534f;
+    color: white;
+}
+
+.btn-save {
+    background-color: #5cb85c;
+    color: white;
+}
