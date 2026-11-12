@@ -18,7 +18,9 @@
 
 ## 실행 방법
 
-`medication.html` 파일을 브라우저에서 엽니다. 설치나 서버가 필요 없습니다.
+웹에서 바로 열기: https://meditiming.github.io/Meditiming/
+
+파일을 내려받았다면 `medication.html` 파일을 브라우저에서 엽니다. 설치나 서버가 필요 없습니다.
 
 - 글꼴과 사진 글자 인식 도구를 인터넷에서 불러오므로 인터넷 연결이 필요합니다.
 - 복용 알림은 화면을 열어 둔 동안에만 나옵니다.
@@ -32,4 +34,5 @@
 | `data/sample-data.json`, `data/sample-data.js` | 화면에 쓰는 가상 데이터 10개 |
 | `기획서.md` | 서비스 기획서 |
 | `CLAUDE.md` | 이 프로젝트를 만들 때 지킨 규칙 |
-| `index.html`, `blog.css`, `서울교통공사_지하철혼잡도정보_20251130.csv` | 같은 폴더에 있던 다른 수업 실습 파일입니다. MediTiming과는 관계없습니다 |
+| `index.html` | 사이트 첫 화면입니다. `medication.html`로 바로 넘어갑니다 |
+| `blog.html`, `blog.css`, `서울교통공사_지하철혼잡도정보_20251130.csv` | 같은 폴더에 있던 다른 수업 실습 파일입니다. MediTiming과는 관계없습니다 |

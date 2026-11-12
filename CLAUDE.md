@@ -70,5 +70,6 @@
 
 ## 파일
 
-- 이 폴더의 기존 파일(`index.html`, `blog.css`, CSV 파일)은 다른 과제의 것이므로 고치거나 덮어쓰지 않는다.
+- 이 폴더의 `blog.html`, `blog.css`, CSV 파일은 다른 과제의 것이므로 고치거나 덮어쓰지 않는다. (`blog.html`은 원래 `index.html`이었고, 사이트 첫 화면을 MediTiming으로 바꾸면서 이름만 바꿨다.)
+- `index.html`은 사이트(https://meditiming.github.io/Meditiming/) 첫 화면에서 `medication.html`로 넘겨 주는 파일이다.
 - 서비스는 새 HTML 파일로 만든다. 파일 이름은 만들기 전에 사용자에게 확인한다.
